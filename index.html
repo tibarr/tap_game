@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тапалка AIR</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background: #0a0f1e;
+            color: white;
+            text-align: center;
+            padding-top: 50px;
+            font-family: Arial, sans-serif;
+        }
+        .tap-button {
+            font-size: 80px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+            user-select: none;
+            background: #00a8ff;
+            color: white;
+            padding: 30px 50px;
+            border-radius: 50px;
+            display: inline-block;
+            margin-top: 30px;
+            box-shadow: 0 10px 0 #0077b3;
+        }
+        .tap-button:active {
+            transform: scale(0.9);
+            box-shadow: 0 5px 0 #0077b3;
+        }
+        #score {
+            font-size: 48px;
+            margin: 30px;
+            font-weight: bold;
+            color: gold;
+        }
+    </style>
+</head>
+<body>
+    <h1>✈️ TAP AIR</h1>
+    <div id="score">0</div>
+    
+    <!-- ВОТ ЗДЕСЬ БУКВЫ AIR -->
+    <div class="tap-button" onclick="tap()">
+        AIR
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        
+        let count = 0;
+        function tap() {
+            count++;
+            document.getElementById('score').innerText = count;
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+    </script>
+</body>
+</html>
