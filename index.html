@@ -13,7 +13,6 @@
             margin: 0;
             padding-bottom: 100px;
         }
-        /* ===== ID ПОЛЬЗОВАТЕЛЯ СВЕРХУ (ЗЕЛЁНАЯ ТАБЛЕТКА) ===== */
         #user-info {
             font-size: 16px;
             color: #88ff88;
@@ -50,7 +49,6 @@
             font-weight: bold;
             color: gold;
         }
-        /* ===== КОНТЕЙНЕР ДЛЯ КНОПОК ===== */
         .buttons-container {
             position: fixed;
             bottom: 30px;
@@ -62,7 +60,7 @@
             flex-wrap: wrap;
             padding: 0 20px;
         }
-        /* ===== СТИЛЬ КНОПКИ БОНУСЫ ===== */
+        /* ===== КНОПКА БОНУСЫ — ТЕПЕРЬ КОРОТКАЯ ===== */
         .action-button {
             font-size: 28px;
             font-weight: bold;
@@ -71,12 +69,12 @@
             user-select: none;
             background: #00a8ff;
             color: white;
-            padding: 15px 30px;
+            padding: 12px 25px;
             border-radius: 40px;
             display: inline-block;
             box-shadow: 0 8px 0 #0077b3;
             border: none;
-            min-width: 140px;
+            width: fit-content;
             letter-spacing: 1px;
         }
         .action-button:active {
@@ -87,42 +85,28 @@
 </head>
 <body>
     <h1>✈️ TAP AIR</h1>
-    
-    <!-- ===== ID ПОЛЬЗОВАТЕЛЯ В САМОМ ВЕРХУ ===== -->
     <div id="user-info">Загрузка...</div>
-    
     <div id="score">0</div>
     
     <div class="tap-button" onclick="tap()">
         AIR
     </div>
 
-    <!-- ===== КОНТЕЙНЕР С КНОПКАМИ ===== -->
     <div class="buttons-container">
-        <!-- Кнопка Бонусы -->
         <div class="action-button" onclick="bonusClick()">
             🎁 Бонусы
         </div>
     </div>
 
     <script>
-        // ===================================
-        // 1. ПОДКЛЮЧЕНИЕ К TELEGRAM
-        // ===================================
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        // ===================================
-        // 2. ПОЛУЧАЕМ TELEGRAM ID ИГРОКА
-        // ===================================
         const initData = window.Telegram.WebApp.initDataUnsafe;
         const userId = initData.user?.id;
         const userName = initData.user?.first_name || "Игрок";
 
-        // ===================================
-        // 3. ПОКАЗЫВАЕМ ID НАВЕРХУ (ЗЕЛЁНАЯ СТРОКА)
-        // ===================================
         if (userId) {
             document.getElementById('user-info').innerHTML = 
                 `🆔 Твой ID: <strong>${userId}</strong>  ·  👤 ${userName}`;
@@ -131,37 +115,24 @@
                 `⚠️ Запусти в Telegram бота`;
         }
 
-        // ===================================
-        // 4. ЗАГРУЗКА СЧЁТА
-        // ===================================
         const storageKey = userId ? "tap_score_" + userId : "tap_score_guest";
-        
         let count = localStorage.getItem(storageKey);
         if (count === null) {
             count = 0;
         } else {
             count = parseInt(count);
         }
-        
         document.getElementById('score').innerText = count;
 
-        // ===================================
-        // 5. ФУНКЦИЯ ТАПА
-        // ===================================
         function tap() {
             count++;
             document.getElementById('score').innerText = count;
-            
             if (userId) {
                 localStorage.setItem(storageKey, count);
             }
-            
             tg.HapticFeedback.impactOccurred('medium');
         }
 
-        // ===================================
-        // 6. ФУНКЦИЯ БОНУСОВ
-        // ===================================
         function bonusClick() {
             tg.HapticFeedback.impactOccurred('light');
             tg.showAlert('🎁 Раздел бонусов в разработке');
