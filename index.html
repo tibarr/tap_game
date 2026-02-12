@@ -91,7 +91,7 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            padding-top: 60px;
+            padding-top: 20px;
             overflow-y: auto;
         }
         .bonus-screen.active {
@@ -120,52 +120,62 @@
         .bonus-card {
             background: #1a2a3a;
             border-radius: 30px;
-            padding: 30px 25px;
-            margin: 20px;
-            width: 80%;
+            padding: 25px 20px;
+            margin: 15px;
+            width: 85%;
             max-width: 400px;
             border: 2px solid #ffd700;
         }
         .bonus-title {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: bold;
             color: #ffd700;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .bonus-description {
-            font-size: 20px;
-            margin-bottom: 30px;
+            font-size: 18px;
+            margin-bottom: 20px;
             color: #ffffff;
         }
         .bonus-link-button {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             cursor: pointer;
             transition: 0.1s;
             user-select: none;
             background: linear-gradient(145deg, #ffd700, #ffb700);
             color: #1a2a3a;
-            padding: 18px 30px;
+            padding: 15px 25px;
             border-radius: 50px;
             display: inline-block;
             box-shadow: 0 8px 0 #b87c00;
             border: none;
             width: 80%;
-            max-width: 300px;
-            margin: 10px auto;
+            max-width: 280px;
+            margin: 8px auto;
             text-decoration: none;
         }
         .bonus-link-button:active {
             transform: scale(0.95);
             box-shadow: 0 4px 0 #b87c00;
         }
+        .daily-button {
+            background: linear-gradient(145deg, #00a8ff, #0077b3);
+            box-shadow: 0 8px 0 #005580;
+        }
         .bonus-reward {
-            font-size: 20px;
+            font-size: 18px;
             color: #88ff88;
-            margin-top: 20px;
+            margin-top: 15px;
             padding: 10px;
             background: #0f1a1f;
             border-radius: 20px;
+        }
+        .timer {
+            font-size: 20px;
+            color: #ffaa00;
+            margin-top: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -187,6 +197,25 @@
     <div id="bonusScreen" class="bonus-screen">
         <div class="close-button" onclick="closeBonuses()">✕</div>
         
+        <!-- ===== ЕЖЕДНЕВНЫЙ БОНУС ===== -->
+        <div class="bonus-card">
+            <div class="bonus-title">📅 ЕЖЕДНЕВНЫЙ</div>
+            <div class="bonus-description">
+                Заходи каждый день и получай<br>
+                <span style="color: #ffd700; font-size: 32px;">+100 AIR</span>
+            </div>
+            
+            <button class="bonus-link-button daily-button" onclick="claimDailyBonus()" id="dailyButton">
+                🎁 Забрать награду
+            </button>
+            
+            <div id="dailyStatus" class="bonus-reward">
+                ✨ Награда: 100 AIR
+            </div>
+            <div id="dailyTimer" class="timer"></div>
+        </div>
+
+        <!-- ===== БОНУС ЗА ПОДПИСКУ ===== -->
         <div class="bonus-card">
             <div class="bonus-title">📢 ПОДПИШИСЬ</div>
             <div class="bonus-description">
@@ -196,10 +225,13 @@
             
             <a href="https://t.me/air_coinb" 
                class="bonus-link-button" 
-               target="_blank" 
-               onclick="claimChannelBonus()">
+               target="_blank">
                 🔗 Перейти в канал
             </a>
+            
+            <button class="bonus-link-button" onclick="claimChannelBonus()" style="background: linear-gradient(145deg, #00a8ff, #0077b3); margin-top: 10px;">
+                🎁 Получить 5000 AIR
+            </button>
             
             <div id="channelBonusStatus" class="bonus-reward">
                 🎁 Награда: 5000 AIR
@@ -231,38 +263,104 @@
         }
 
         // ═══════════════════════════════════════════════
-        // 3. ЗАГРУЗКА СЧЁТА - УПРОЩЕНО ДО МАКСИМУМА
+        // 3. КЛЮЧИ ХРАНЕНИЯ
         // ═══════════════════════════════════════════════
         const storageKey = userId ? "tap_score_" + userId : "tap_score_guest";
-        const bonusKey = userId ? "bonus_channel_" + userId : "bonus_channel_guest";
-        
-        // ЧИТАЕМ СЧЁТ ИЗ ХРАНИЛИЩА
+        const channelBonusKey = userId ? "bonus_channel_" + userId : "bonus_channel_guest";
+        const dailyBonusKey = userId ? "bonus_daily_" + userId : "bonus_daily_guest";
+        const dailyTimeKey = userId ? "daily_time_" + userId : "daily_time_guest";
+
+        // ═══════════════════════════════════════════════
+        // 4. ЗАГРУЗКА СЧЁТА
+        // ═══════════════════════════════════════════════
         let savedScore = localStorage.getItem(storageKey);
-        let count = 0;
-        
-        if (savedScore !== null) {
-            count = parseInt(savedScore);
-        }
-        
-        // ПОКАЗЫВАЕМ СЧЁТ
+        let count = savedScore ? parseInt(savedScore) : 0;
         document.getElementById('score').innerText = count;
 
         // ═══════════════════════════════════════════════
-        // 4. ТАП - СОХРАНЯЕТ СРАЗУ
+        // 5. ТАП
         // ═══════════════════════════════════════════════
         function tap() {
             count++;
             document.getElementById('score').innerText = count;
             localStorage.setItem(storageKey, count);
             tg.HapticFeedback.impactOccurred('medium');
-            console.log("Сохранено:", count); // Для проверки
         }
 
         // ═══════════════════════════════════════════════
-        // 5. БОНУС
+        // 6. ЕЖЕДНЕВНЫЙ БОНУС (100 AIR КАЖДЫЕ 24 ЧАСА)
+        // ═══════════════════════════════════════════════
+        function claimDailyBonus() {
+            const lastClaimTime = localStorage.getItem(dailyTimeKey);
+            const now = Date.now();
+            const twentyFourHours = 24 * 60 * 60 * 1000; // 24 часа в миллисекундах
+
+            // Если уже получал сегодня
+            if (lastClaimTime && (now - parseInt(lastClaimTime)) < twentyFourHours) {
+                const timeLeft = twentyFourHours - (now - parseInt(lastClaimTime));
+                const hoursLeft = Math.floor(timeLeft / (60 * 60 * 1000));
+                const minutesLeft = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+                tg.showAlert(`⏳ Бонус уже получен! Следующий через ${hoursLeft}ч ${minutesLeft}м`);
+                return;
+            }
+
+            // Начисляем 100 AIR
+            count += 100;
+            document.getElementById('score').innerText = count;
+            localStorage.setItem(storageKey, count);
+            
+            // Запоминаем время получения
+            localStorage.setItem(dailyTimeKey, now.toString());
+            localStorage.setItem(dailyBonusKey, 'claimed');
+            
+            // Обновляем интерфейс
+            updateDailyBonusUI();
+            
+            tg.HapticFeedback.impactOccurred('heavy');
+            tg.showAlert('🎉 +100 AIR! Возвращайся завтра!');
+        }
+
+        // ═══════════════════════════════════════════════
+        // 7. ОБНОВЛЕНИЕ UI ЕЖЕДНЕВНОГО БОНУСА
+        // ═══════════════════════════════════════════════
+        function updateDailyBonusUI() {
+            const lastClaimTime = localStorage.getItem(dailyTimeKey);
+            const now = Date.now();
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            const dailyButton = document.getElementById('dailyButton');
+            const dailyStatus = document.getElementById('dailyStatus');
+            const dailyTimer = document.getElementById('dailyTimer');
+
+            if (lastClaimTime && (now - parseInt(lastClaimTime)) < twentyFourHours) {
+                // Бонус уже получен, показываем таймер
+                const timeLeft = twentyFourHours - (now - parseInt(lastClaimTime));
+                const hoursLeft = Math.floor(timeLeft / (60 * 60 * 1000));
+                const minutesLeft = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+                const secondsLeft = Math.floor((timeLeft % (60 * 1000)) / 1000);
+                
+                dailyButton.style.opacity = '0.5';
+                dailyButton.disabled = true;
+                dailyStatus.innerHTML = '✅ Бонус получен!';
+                dailyStatus.style.color = '#ffd700';
+                dailyTimer.innerHTML = `⏳ Следующий бонус через: ${hoursLeft}ч ${minutesLeft}м ${secondsLeft}с`;
+                
+                // Обновляем таймер каждую секунду
+                setTimeout(updateDailyBonusUI, 1000);
+            } else {
+                // Можно получать бонус
+                dailyButton.style.opacity = '1';
+                dailyButton.disabled = false;
+                dailyStatus.innerHTML = '✨ Награда: 100 AIR';
+                dailyStatus.style.color = '#88ff88';
+                dailyTimer.innerHTML = '✅ Бонус доступен!';
+            }
+        }
+
+        // ═══════════════════════════════════════════════
+        // 8. БОНУС ЗА ПОДПИСКУ (5000 AIR, ОДИН РАЗ)
         // ═══════════════════════════════════════════════
         function claimChannelBonus() {
-            const bonusClaimed = localStorage.getItem(bonusKey);
+            const bonusClaimed = localStorage.getItem(channelBonusKey);
             
             if (bonusClaimed === 'claimed') {
                 tg.showAlert('❌ Ты уже получил этот бонус!');
@@ -272,7 +370,7 @@
             count += 5000;
             document.getElementById('score').innerText = count;
             localStorage.setItem(storageKey, count);
-            localStorage.setItem(bonusKey, 'claimed');
+            localStorage.setItem(channelBonusKey, 'claimed');
             
             const statusDiv = document.getElementById('channelBonusStatus');
             statusDiv.innerHTML = '✅ Бонус получен! +5000 AIR';
@@ -280,27 +378,29 @@
             
             tg.HapticFeedback.impactOccurred('heavy');
             tg.showAlert('🎉 Ты получил 5000 AIR!');
-            
-            window.open('https://t.me/air_coinb', '_blank');
         }
 
         // ═══════════════════════════════════════════════
-        // 6. ОТКРЫТИЕ БОНУСОВ
+        // 9. ОТКРЫТИЕ БОНУСОВ
         // ═══════════════════════════════════════════════
         function openBonuses() {
             document.getElementById('bonusScreen').classList.add('active');
             tg.HapticFeedback.impactOccurred('light');
             
-            const bonusClaimed = localStorage.getItem(bonusKey);
-            const statusDiv = document.getElementById('channelBonusStatus');
+            // Обновляем статус подписки
+            const channelBonusClaimed = localStorage.getItem(channelBonusKey);
+            const channelStatus = document.getElementById('channelBonusStatus');
             
-            if (bonusClaimed === 'claimed') {
-                statusDiv.innerHTML = '✅ Бонус уже получен!';
-                statusDiv.style.color = '#ffd700';
+            if (channelBonusClaimed === 'claimed') {
+                channelStatus.innerHTML = '✅ Бонус получен! +5000 AIR';
+                channelStatus.style.color = '#ffd700';
             } else {
-                statusDiv.innerHTML = '🎁 Награда: 5000 AIR';
-                statusDiv.style.color = '#88ff88';
+                channelStatus.innerHTML = '🎁 Награда: 5000 AIR';
+                channelStatus.style.color = '#88ff88';
             }
+            
+            // Обновляем ежедневный бонус
+            updateDailyBonusUI();
         }
 
         function closeBonuses() {
@@ -308,8 +408,13 @@
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        // ДЛЯ ПРОВЕРКИ В КОНСОЛИ
-        console.log("Ключ:", storageKey, "Счёт:", count);
+        // ═══════════════════════════════════════════════
+        // 10. АВТОМАТИЧЕСКОЕ ОБНОВЛЕНИЕ ПРИ ЗАГРУЗКЕ
+        // ═══════════════════════════════════════════════
+        // Проверяем статус ежедневного бонуса при загрузке
+        if (userId) {
+            updateDailyBonusUI();
+        }
     </script>
 </body>
 </html>
