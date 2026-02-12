@@ -197,20 +197,17 @@
 </head>
 <body>
     <h1>✈️ TAP AIR</h1>
-    <div id="user-info">Загрузка...</div>
-    <div id="score">0</div>
-    
-    <div class="tap-button" onclick="tap()">
-        AIR
-    </div>
 
-    <div class="buttons-container">
-    <div class="action-button" onclick="openBonuses()">
-        🎁 Бонусы
-    </div>
-    <div class="action-button" onclick="openFriends()">
+<!-- ===== КНОПКА ДРУЗЬЯ МЕЖДУ TAP AIR И ID ===== -->
+<div style="display: flex; justify-content: center; margin: 15px 0 10px 0;">
+    <div class="friends-top-button" onclick="openFriends()">
         👥 Друзья
     </div>
+</div>
+
+<!-- ===== ID ПОЛЬЗОВАТЕЛЯ ===== -->
+<div style="display: flex; align-items: center; justify-content: center; margin-bottom: 30px;">
+    <div id="user-info" style="margin-bottom: 0;">Загрузка...</div>
 </div>
 
     <!-- ===== ЭКРАН БОНУСОВ ===== -->
