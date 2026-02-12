@@ -41,20 +41,55 @@
     <h1>✈️ TAP AIR</h1>
     <div id="score">0</div>
     
-    <!-- ВОТ ЗДЕСЬ БУКВЫ AIR -->
     <div class="tap-button" onclick="tap()">
         AIR
     </div>
 
     <script>
+        // ===================================
+        // 1. ПОДКЛЮЧЕНИЕ К TELEGRAM
+        // ===================================
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
+
+        // ===================================
+        // 2. ПОЛУЧАЕМ TELEGRAM ID ИГРОКА
+        // ===================================
+        const initData = window.Telegram.WebApp.initDataUnsafe;
+        const userId = initData.user?.id || "default_user";
+        const userName = initData.user?.first_name || "Игрок";
+
+        console.log("ID пользователя:", userId);
+
+        // ===================================
+        // 3. ЗАГРУЗКА СЧЁТА ИЗ ХРАНИЛИЩА
+        // ===================================
+        // Ключ для хранения будет уникальным для каждого пользователя
+        const storageKey = "tap_score_" + userId;
         
-        let count = 0;
+        // Загружаем сохранённый счёт или ставим 0
+        let count = localStorage.getItem(storageKey);
+        if (count === null) {
+            count = 0;
+        } else {
+            count = parseInt(count);
+        }
+        
+        // Показываем счёт на экране
+        document.getElementById('score').innerText = count;
+
+        // ===================================
+        // 4. ФУНКЦИЯ ТАПА
+        // ===================================
         function tap() {
             count++;
             document.getElementById('score').innerText = count;
+            
+            // Сохраняем счёт в localStorage
+            localStorage.setItem(storageKey, count);
+            
+            // Вибрация в Telegram
             tg.HapticFeedback.impactOccurred('medium');
         }
     </script>
