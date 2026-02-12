@@ -191,7 +191,7 @@
             <div class="bonus-title">📢 ПОДПИШИСЬ</div>
             <div class="bonus-description">
                 На канал AIR COIN<br>
-                и получи 5000 AIR монет!   <!-- ← ИСПРАВЛЕНО -->
+                и получи 5000 AIR монет!
             </div>
             
             <a href="https://t.me/air_coinb" 
@@ -202,12 +202,15 @@
             </a>
             
             <div id="channelBonusStatus" class="bonus-reward">
-                🎁 Награда: 5000 AIR        <!-- ← ИСПРАВЛЕНО -->
+                🎁 Награда: 5000 AIR
             </div>
         </div>
     </div>
 
     <script>
+        // ═══════════════════════════════════════════════
+        // 1. TELEGRAM
+        // ═══════════════════════════════════════════════
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
@@ -216,6 +219,9 @@
         const userId = initData.user?.id;
         const userName = initData.user?.first_name || "Игрок";
 
+        // ═══════════════════════════════════════════════
+        // 2. ПОКАЗЫВАЕМ ID
+        // ═══════════════════════════════════════════════
         if (userId) {
             document.getElementById('user-info').innerHTML = 
                 `🆔 Твой ID: <strong>${userId}</strong>  ·  👤 ${userName}`;
@@ -224,31 +230,68 @@
                 `⚠️ Запусти в Telegram бота`;
         }
 
+        // ═══════════════════════════════════════════════
+        // 3. ЗАГРУЗКА СЧЁТА - УПРОЩЕНО ДО МАКСИМУМА
+        // ═══════════════════════════════════════════════
         const storageKey = userId ? "tap_score_" + userId : "tap_score_guest";
-        const channelBonusKey = userId ? "channel_bonus_" + userId : "channel_bonus_guest";
+        const bonusKey = userId ? "bonus_channel_" + userId : "bonus_channel_guest";
         
-        let count = localStorage.getItem(storageKey);
-        if (count === null) {
-            count = 0;
-        } else {
-            count = parseInt(count);
+        // ЧИТАЕМ СЧЁТ ИЗ ХРАНИЛИЩА
+        let savedScore = localStorage.getItem(storageKey);
+        let count = 0;
+        
+        if (savedScore !== null) {
+            count = parseInt(savedScore);
         }
+        
+        // ПОКАЗЫВАЕМ СЧЁТ
         document.getElementById('score').innerText = count;
 
+        // ═══════════════════════════════════════════════
+        // 4. ТАП - СОХРАНЯЕТ СРАЗУ
+        // ═══════════════════════════════════════════════
         function tap() {
             count++;
             document.getElementById('score').innerText = count;
-            if (userId) {
-                localStorage.setItem(storageKey, count);
-            }
+            localStorage.setItem(storageKey, count);
             tg.HapticFeedback.impactOccurred('medium');
+            console.log("Сохранено:", count); // Для проверки
         }
 
+        // ═══════════════════════════════════════════════
+        // 5. БОНУС
+        // ═══════════════════════════════════════════════
+        function claimChannelBonus() {
+            const bonusClaimed = localStorage.getItem(bonusKey);
+            
+            if (bonusClaimed === 'claimed') {
+                tg.showAlert('❌ Ты уже получил этот бонус!');
+                return;
+            }
+            
+            count += 5000;
+            document.getElementById('score').innerText = count;
+            localStorage.setItem(storageKey, count);
+            localStorage.setItem(bonusKey, 'claimed');
+            
+            const statusDiv = document.getElementById('channelBonusStatus');
+            statusDiv.innerHTML = '✅ Бонус получен! +5000 AIR';
+            statusDiv.style.color = '#ffd700';
+            
+            tg.HapticFeedback.impactOccurred('heavy');
+            tg.showAlert('🎉 Ты получил 5000 AIR!');
+            
+            window.open('https://t.me/air_coinb', '_blank');
+        }
+
+        // ═══════════════════════════════════════════════
+        // 6. ОТКРЫТИЕ БОНУСОВ
+        // ═══════════════════════════════════════════════
         function openBonuses() {
             document.getElementById('bonusScreen').classList.add('active');
             tg.HapticFeedback.impactOccurred('light');
             
-            const bonusClaimed = localStorage.getItem(channelBonusKey);
+            const bonusClaimed = localStorage.getItem(bonusKey);
             const statusDiv = document.getElementById('channelBonusStatus');
             
             if (bonusClaimed === 'claimed') {
@@ -265,28 +308,8 @@
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        function claimChannelBonus() {
-            const bonusClaimed = localStorage.getItem(channelBonusKey);
-            
-            if (bonusClaimed === 'claimed') {
-                tg.showAlert('❌ Ты уже получил этот бонус!');
-                return;
-            }
-            
-            count += 5000;                    // ← ИСПРАВЛЕНО
-            document.getElementById('score').innerText = count;
-            localStorage.setItem(storageKey, count);
-            localStorage.setItem(channelBonusKey, 'claimed');
-            
-            const statusDiv = document.getElementById('channelBonusStatus');
-            statusDiv.innerHTML = '✅ Бонус получен! +5000 AIR';  // ← ИСПРАВЛЕНО
-            statusDiv.style.color = '#ffd700';
-            
-            tg.HapticFeedback.impactOccurred('heavy');
-            tg.showAlert('🎉 Ты получил 5000 AIR! Подписка подтверждена.');  // ← ИСПРАВЛЕНО
-            
-            window.open('https://t.me/air_coinb', '_blank');
-        }
+        // ДЛЯ ПРОВЕРКИ В КОНСОЛИ
+        console.log("Ключ:", storageKey, "Счёт:", count);
     </script>
 </body>
 </html>
