@@ -8,10 +8,22 @@
             background: #0a0f1e;
             color: white;
             text-align: center;
-            padding-top: 50px;
+            padding-top: 20px;
             font-family: Arial, sans-serif;
             margin: 0;
             padding-bottom: 100px;
+        }
+        /* ===== ID ПОЛЬЗОВАТЕЛЯ СВЕРХУ ===== */
+        #user-info {
+            font-size: 16px;
+            color: #88ff88;
+            margin-top: 10px;
+            margin-bottom: 30px;
+            background: #1a2a3a;
+            padding: 12px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            border: 1px solid #44aa44;
         }
         .tap-button {
             font-size: 80px;
@@ -24,7 +36,7 @@
             padding: 30px 50px;
             border-radius: 50px;
             display: inline-block;
-            margin-top: 30px;
+            margin-top: 20px;
             box-shadow: 0 10px 0 #0077b3;
         }
         .tap-button:active {
@@ -36,15 +48,6 @@
             margin: 30px;
             font-weight: bold;
             color: gold;
-        }
-        #user-info {
-            font-size: 16px;
-            color: #88ff88;
-            margin-top: 30px;
-            background: #1a2a3a;
-            padding: 10px;
-            border-radius: 10px;
-            display: inline-block;
         }
         /* ===== КОНТЕЙНЕР ДЛЯ КНОПОК ===== */
         .buttons-container {
@@ -83,14 +86,15 @@
 </head>
 <body>
     <h1>✈️ TAP AIR</h1>
+    
+    <!-- ===== ID ПОЛЬЗОВАТЕЛЯ В САМОМ ВЕРХУ ===== -->
+    <div id="user-info">Загрузка...</div>
+    
     <div id="score">0</div>
     
     <div class="tap-button" onclick="tap()">
         AIR
     </div>
-
-    <!-- ID пользователя -->
-    <div id="user-info">Загрузка...</div>
 
     <!-- ===== КОНТЕЙНЕР С КНОПКАМИ ===== -->
     <div class="buttons-container">
@@ -117,18 +121,18 @@
         const userName = initData.user?.first_name || "Игрок";
 
         // ===================================
-        // 3. ПОКАЗЫВАЕМ ID НА ЭКРАНЕ
+        // 3. ПОКАЗЫВАЕМ ID НАВЕРХУ
         // ===================================
         if (userId) {
             document.getElementById('user-info').innerHTML = 
-                `🆔 Твой Telegram ID: <strong>${userId}</strong><br>👤 Привет, ${userName}!`;
+                `🆔 Твой ID: <strong>${userId}</strong> · 👤 ${userName}`;
         } else {
             document.getElementById('user-info').innerHTML = 
-                `⚠️ Запусти игру через Telegram бота, чтобы увидеть свой ID`;
+                `⚠️ Запусти в Telegram бота`;
         }
 
         // ===================================
-        // 4. ЗАГРУЗКА СЧЁТА ИЗ ХРАНИЛИЩА
+        // 4. ЗАГРУЗКА СЧЁТА
         // ===================================
         const storageKey = userId ? "tap_score_" + userId : "tap_score_guest";
         
@@ -159,7 +163,6 @@
         // 6. ФУНКЦИЯ БОНУСОВ (ПУСТАЯ)
         // ===================================
         function bonusClick() {
-            // Сюда потом добавишь логику
             tg.HapticFeedback.impactOccurred('light');
             tg.showAlert('🎁 Раздел бонусов в разработке');
         }
