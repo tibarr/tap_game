@@ -10,6 +10,8 @@
             text-align: center;
             padding-top: 50px;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding-bottom: 100px;
         }
         .tap-button {
             font-size: 80px;
@@ -35,6 +37,48 @@
             font-weight: bold;
             color: gold;
         }
+        #user-info {
+            font-size: 16px;
+            color: #88ff88;
+            margin-top: 30px;
+            background: #1a2a3a;
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        /* ===== КОНТЕЙНЕР ДЛЯ КНОПОК ===== */
+        .buttons-container {
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 0 20px;
+        }
+        /* ===== СТИЛЬ КНОПКИ КАК У AIR, НО МЕНЬШЕ ===== */
+        .action-button {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+            user-select: none;
+            background: #00a8ff;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 40px;
+            display: inline-block;
+            box-shadow: 0 8px 0 #0077b3;
+            border: none;
+            min-width: 140px;
+            letter-spacing: 1px;
+        }
+        .action-button:active {
+            transform: scale(0.92);
+            box-shadow: 0 4px 0 #0077b3;
+        }
     </style>
 </head>
 <body>
@@ -43,6 +87,18 @@
     
     <div class="tap-button" onclick="tap()">
         AIR
+    </div>
+
+    <!-- ID пользователя -->
+    <div id="user-info">Загрузка...</div>
+
+    <!-- ===== КОНТЕЙНЕР С КНОПКАМИ ===== -->
+    <div class="buttons-container">
+        <!-- Кнопка Бонусы -->
+        <div class="action-button" onclick="bonusClick()">
+            🎁 Бонусы
+        </div>
+        <!-- Сюда потом добавишь другие кнопки -->
     </div>
 
     <script>
@@ -57,18 +113,25 @@
         // 2. ПОЛУЧАЕМ TELEGRAM ID ИГРОКА
         // ===================================
         const initData = window.Telegram.WebApp.initDataUnsafe;
-        const userId = initData.user?.id || "default_user";
+        const userId = initData.user?.id;
         const userName = initData.user?.first_name || "Игрок";
 
-        console.log("ID пользователя:", userId);
+        // ===================================
+        // 3. ПОКАЗЫВАЕМ ID НА ЭКРАНЕ
+        // ===================================
+        if (userId) {
+            document.getElementById('user-info').innerHTML = 
+                `🆔 Твой Telegram ID: <strong>${userId}</strong><br>👤 Привет, ${userName}!`;
+        } else {
+            document.getElementById('user-info').innerHTML = 
+                `⚠️ Запусти игру через Telegram бота, чтобы увидеть свой ID`;
+        }
 
         // ===================================
-        // 3. ЗАГРУЗКА СЧЁТА ИЗ ХРАНИЛИЩА
+        // 4. ЗАГРУЗКА СЧЁТА ИЗ ХРАНИЛИЩА
         // ===================================
-        // Ключ для хранения будет уникальным для каждого пользователя
-        const storageKey = "tap_score_" + userId;
+        const storageKey = userId ? "tap_score_" + userId : "tap_score_guest";
         
-        // Загружаем сохранённый счёт или ставим 0
         let count = localStorage.getItem(storageKey);
         if (count === null) {
             count = 0;
@@ -76,21 +139,29 @@
             count = parseInt(count);
         }
         
-        // Показываем счёт на экране
         document.getElementById('score').innerText = count;
 
         // ===================================
-        // 4. ФУНКЦИЯ ТАПА
+        // 5. ФУНКЦИЯ ТАПА
         // ===================================
         function tap() {
             count++;
             document.getElementById('score').innerText = count;
             
-            // Сохраняем счёт в localStorage
-            localStorage.setItem(storageKey, count);
+            if (userId) {
+                localStorage.setItem(storageKey, count);
+            }
             
-            // Вибрация в Telegram
             tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        // ===================================
+        // 6. ФУНКЦИЯ БОНУСОВ (ПУСТАЯ)
+        // ===================================
+        function bonusClick() {
+            // Сюда потом добавишь логику
+            tg.HapticFeedback.impactOccurred('light');
+            tg.showAlert('🎁 Раздел бонусов в разработке');
         }
     </script>
 </body>
