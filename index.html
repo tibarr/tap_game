@@ -167,20 +167,12 @@
             background: #0f1a1f;
             border-radius: 20px;
         }
-        .loading {
-            color: #00a8ff;
-            font-size: 24px;
-            margin: 50px;
-        }
     </style>
 </head>
 <body>
     <h1>✈️ TAP AIR</h1>
     <div id="user-info">Загрузка...</div>
-    <div id="score">
-        <span id="scoreValue">0</span>
-        <div class="loading" id="loadingIndicator" style="display: none;">⏳ Загрузка...</div>
-    </div>
+    <div id="score">0</div>
     
     <div class="tap-button" onclick="tap()">
         AIR
@@ -199,7 +191,7 @@
             <div class="bonus-title">📢 ПОДПИШИСЬ</div>
             <div class="bonus-description">
                 На канал AIR COIN<br>
-                и получи 5000 AIR монет!
+                и получи 5000 AIR монет!   <!-- ← ИСПРАВЛЕНО -->
             </div>
             
             <a href="https://t.me/air_coinb" 
@@ -210,22 +202,12 @@
             </a>
             
             <div id="channelBonusStatus" class="bonus-reward">
-                🎁 Награда: 5000 AIR
+                🎁 Награда: 5000 AIR        <!-- ← ИСПРАВЛЕНО -->
             </div>
         </div>
     </div>
 
     <script>
-        // ═══════════════════════════════════════════════
-        // 1. ⚡ НАСТРОЙКИ AIRTABLE — ВСТАВЬ СВОИ ДАННЫЕ!
-        // ═══════════════════════════════════════════════
-        const AIRTABLE_API_KEY = 'patТВОЙ_НОВЫЙ_ТОКЕН';      // ← ВСТАВЬ СВОЙ ТОКЕН
-        const AIRTABLE_BASE_ID = 'appТВОЙ_ID_БАЗЫ';         // ← ВСТАВЬ ID СВОЕЙ БАЗЫ
-        const AIRTABLE_TABLE_NAME = 'Table 1';              // ← ТАБЛИЦА ДОЛЖНА НАЗЫВАТЬСЯ ТАК ЖЕ, КАК В Airtable
-
-        // ═══════════════════════════════════════════════
-        // 2. TELEGRAM ИНИЦИАЛИЗАЦИЯ
-        // ═══════════════════════════════════════════════
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
@@ -234,7 +216,6 @@
         const userId = initData.user?.id;
         const userName = initData.user?.first_name || "Игрок";
 
-        // Показываем ID пользователя
         if (userId) {
             document.getElementById('user-info').innerHTML = 
                 `🆔 Твой ID: <strong>${userId}</strong>  ·  👤 ${userName}`;
@@ -243,206 +224,31 @@
                 `⚠️ Запусти в Telegram бота`;
         }
 
-        // ═══════════════════════════════════════════════
-        // 3. ПЕРЕМЕННЫЕ
-        // ═══════════════════════════════════════════════
-        let count = 0;
-        let recordId = null;
-
-        // ═══════════════════════════════════════════════
-        // 4. ЗАГРУЗКА СЧЁТА ИЗ AIRTABLE
-        // ═══════════════════════════════════════════════
-        async function loadScore() {
-            if (!userId) {
-                count = 0;
-                document.getElementById('scoreValue').innerText = count;
-                return;
-            }
-
-            document.getElementById('loadingIndicator').style.display = 'block';
-            
-            try {
-                // Ищем пользователя по tg_id
-                const response = await fetch(
-                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE_NAME)}?filterByFormula={tg_id}=${userId}`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-                        }
-                    }
-                );
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                if (data.records.length > 0) {
-                    // Пользователь найден
-                    const record = data.records[0];
-                    recordId = record.id;
-                    count = record.fields.score || 0;
-                    
-                    // Статус бонуса
-                    const bonusClaimed = record.fields.bonus_channel || false;
-                    if (bonusClaimed) {
-                        localStorage.setItem('channel_bonus_' + userId, 'claimed');
-                    }
-                } else {
-                    // Новый пользователь
-                    await createUserRecord();
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки:', error);
-                count = 0;
-            }
-            
-            document.getElementById('scoreValue').innerText = count;
-            document.getElementById('loadingIndicator').style.display = 'none';
+        const storageKey = userId ? "tap_score_" + userId : "tap_score_guest";
+        const channelBonusKey = userId ? "channel_bonus_" + userId : "channel_bonus_guest";
+        
+        let count = localStorage.getItem(storageKey);
+        if (count === null) {
+            count = 0;
+        } else {
+            count = parseInt(count);
         }
+        document.getElementById('score').innerText = count;
 
-        // ═══════════════════════════════════════════════
-        // 5. СОЗДАНИЕ НОВОГО ПОЛЬЗОВАТЕЛЯ
-        // ═══════════════════════════════════════════════
-        async function createUserRecord() {
-            try {
-                const response = await fetch(
-                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE_NAME)}`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            records: [
-                                {
-                                    fields: {
-                                        tg_id: userId,
-                                        score: 0,
-                                        last_active: new Date().toISOString(),
-                                        bonus_channel: false
-                                    }
-                                }
-                            ]
-                        })
-                    }
-                );
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                if (data.records && data.records.length > 0) {
-                    recordId = data.records[0].id;
-                }
-                count = 0;
-            } catch (error) {
-                console.error('Ошибка создания:', error);
-            }
-        }
-
-        // ═══════════════════════════════════════════════
-        // 6. СОХРАНЕНИЕ СЧЁТА
-        // ═══════════════════════════════════════════════
-        async function saveScore() {
-            if (!userId || !recordId) return;
-            
-            try {
-                await fetch(
-                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE_NAME)}/${recordId}`,
-                    {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            fields: {
-                                score: count,
-                                last_active: new Date().toISOString()
-                            }
-                        })
-                    }
-                );
-            } catch (error) {
-                console.error('Ошибка сохранения:', error);
-            }
-        }
-
-        // ═══════════════════════════════════════════════
-        // 7. ТАП
-        // ═══════════════════════════════════════════════
-        async function tap() {
+        function tap() {
             count++;
-            document.getElementById('scoreValue').innerText = count;
+            document.getElementById('score').innerText = count;
+            if (userId) {
+                localStorage.setItem(storageKey, count);
+            }
             tg.HapticFeedback.impactOccurred('medium');
-            await saveScore();
         }
 
-        // ═══════════════════════════════════════════════
-        // 8. БОНУС ЗА ПОДПИСКУ
-        // ═══════════════════════════════════════════════
-        async function claimChannelBonus() {
-            const bonusClaimed = localStorage.getItem('channel_bonus_' + userId);
-            
-            if (bonusClaimed === 'claimed') {
-                tg.showAlert('❌ Ты уже получил этот бонус!');
-                return;
-            }
-            
-            // Начисляем 5000
-            count += 5000;
-            document.getElementById('scoreValue').innerText = count;
-            await saveScore();
-            
-            // Отмечаем бонус как полученный
-            localStorage.setItem('channel_bonus_' + userId, 'claimed');
-            
-            // Обновляем статус в Airtable
-            if (recordId) {
-                try {
-                    await fetch(
-                        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE_NAME)}/${recordId}`,
-                        {
-                            method: 'PATCH',
-                            headers: {
-                                'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                fields: {
-                                    bonus_channel: true
-                                }
-                            })
-                        }
-                    );
-                } catch (error) {
-                    console.error('Ошибка сохранения бонуса:', error);
-                }
-            }
-            
-            // Обновляем статус на экране
-            const statusDiv = document.getElementById('channelBonusStatus');
-            statusDiv.innerHTML = '✅ Бонус получен! +5000 AIR';
-            statusDiv.style.color = '#ffd700';
-            
-            tg.HapticFeedback.impactOccurred('heavy');
-            tg.showAlert('🎉 Ты получил 5000 AIR! Подписка подтверждена.');
-            
-            window.open('https://t.me/air_coinb', '_blank');
-        }
-
-        // ═══════════════════════════════════════════════
-        // 9. ОТКРЫТИЕ/ЗАКРЫТИЕ БОНУСОВ
-        // ═══════════════════════════════════════════════
         function openBonuses() {
             document.getElementById('bonusScreen').classList.add('active');
             tg.HapticFeedback.impactOccurred('light');
             
-            const bonusClaimed = localStorage.getItem('channel_bonus_' + userId);
+            const bonusClaimed = localStorage.getItem(channelBonusKey);
             const statusDiv = document.getElementById('channelBonusStatus');
             
             if (bonusClaimed === 'claimed') {
@@ -459,11 +265,27 @@
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        // ═══════════════════════════════════════════════
-        // 10. ЗАПУСК
-        // ═══════════════════════════════════════════════
-        if (userId) {
-            loadScore();
+        function claimChannelBonus() {
+            const bonusClaimed = localStorage.getItem(channelBonusKey);
+            
+            if (bonusClaimed === 'claimed') {
+                tg.showAlert('❌ Ты уже получил этот бонус!');
+                return;
+            }
+            
+            count += 5000;                    // ← ИСПРАВЛЕНО
+            document.getElementById('score').innerText = count;
+            localStorage.setItem(storageKey, count);
+            localStorage.setItem(channelBonusKey, 'claimed');
+            
+            const statusDiv = document.getElementById('channelBonusStatus');
+            statusDiv.innerHTML = '✅ Бонус получен! +5000 AIR';  // ← ИСПРАВЛЕНО
+            statusDiv.style.color = '#ffd700';
+            
+            tg.HapticFeedback.impactOccurred('heavy');
+            tg.showAlert('🎉 Ты получил 5000 AIR! Подписка подтверждена.');  // ← ИСПРАВЛЕНО
+            
+            window.open('https://t.me/air_coinb', '_blank');
         }
     </script>
 </body>
