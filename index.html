@@ -8,23 +8,65 @@
             background: #0a0f1e;
             color: white;
             text-align: center;
-            padding-top: 20px;
+            padding-top: 30px;
             font-family: Arial, sans-serif;
             margin: 0;
             padding-bottom: 100px;
         }
-        #user-info {
-            font-size: 16px;
-            color: #88ff88;
-            margin-top: 10px;
+        
+        /* ЗАГОЛОВОК */
+        h1 {
+            font-size: 48px;
             margin-bottom: 30px;
+            color: #ffffff;
+            text-shadow: 0 0 10px #00a8ff;
+        }
+        
+        /* КНОПКА ДРУЗЬЯ (ПОСЕРЕДИНЕ) */
+        .friends-top-button {
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            background: #00a8ff;
+            color: white;
+            padding: 12px 35px;
+            border-radius: 50px;
+            display: inline-block;
+            box-shadow: 0 8px 0 #0077b3;
+            border: none;
+            transition: 0.1s;
+            margin: 20px 0 15px 0;
+            letter-spacing: 2px;
+        }
+        .friends-top-button:active {
+            transform: scale(0.92);
+            box-shadow: 0 4px 0 #0077b3;
+        }
+        
+        /* ID ПОЛЬЗОВАТЕЛЯ */
+        #user-info {
+            font-size: 18px;
+            color: #88ff88;
             background: #1a2a3a;
             padding: 12px 25px;
             border-radius: 50px;
             display: inline-block;
             border: 1px solid #44aa44;
             font-weight: 500;
+            margin-bottom: 30px;
         }
+        
+        /* СЧЕТЧИК */
+        #score {
+            font-size: 64px;
+            margin: 30px;
+            font-weight: bold;
+            color: gold;
+            text-shadow: 0 0 20px #ffaa00;
+        }
+        
+        /* КНОПКА ТАПА AIR */
         .tap-button {
             font-size: 80px;
             font-weight: bold;
@@ -37,18 +79,15 @@
             border-radius: 50px;
             display: inline-block;
             margin-top: 20px;
-            box-shadow: 0 10px 0 #0077b3;
+            box-shadow: 0 12px 0 #0077b3;
+            border: none;
         }
         .tap-button:active {
             transform: scale(0.9);
-            box-shadow: 0 5px 0 #0077b3;
+            box-shadow: 0 6px 0 #0077b3;
         }
-        #score {
-            font-size: 48px;
-            margin: 30px;
-            font-weight: bold;
-            color: gold;
-        }
+        
+        /* КОНТЕЙНЕР КНОПОК ВНИЗУ */
         .buttons-container {
             position: fixed;
             bottom: 30px;
@@ -60,6 +99,8 @@
             flex-wrap: wrap;
             padding: 0 20px;
         }
+        
+        /* КНОПКА БОНУСЫ ВНИЗУ */
         .action-button {
             font-size: 28px;
             font-weight: bold;
@@ -68,7 +109,7 @@
             user-select: none;
             background: #00a8ff;
             color: white;
-            padding: 12px 25px;
+            padding: 12px 30px;
             border-radius: 40px;
             display: inline-block;
             box-shadow: 0 8px 0 #0077b3;
@@ -80,6 +121,8 @@
             transform: scale(0.92);
             box-shadow: 0 4px 0 #0077b3;
         }
+        
+        /* СТИЛИ ДЛЯ ЭКРАНОВ */
         .screen {
             position: fixed;
             top: 0;
@@ -91,7 +134,7 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            padding-top: 20px;
+            padding-top: 30px;
             overflow-y: auto;
         }
         .screen.active {
@@ -196,19 +239,31 @@
     </style>
 </head>
 <body>
+    <!-- ЗАГОЛОВОК -->
     <h1>✈️ TAP AIR</h1>
 
-<!-- ===== КНОПКА ДРУЗЬЯ МЕЖДУ TAP AIR И ID ===== -->
-<div style="display: flex; justify-content: center; margin: 15px 0 10px 0;">
+    <!-- КНОПКА ДРУЗЬЯ - ПОСЕРЕДИНЕ МЕЖДУ TAP AIR И ID -->
     <div class="friends-top-button" onclick="openFriends()">
         👥 Друзья
     </div>
-</div>
 
-<!-- ===== ID ПОЛЬЗОВАТЕЛЯ ===== -->
-<div style="display: flex; align-items: center; justify-content: center; margin-bottom: 30px;">
-    <div id="user-info" style="margin-bottom: 0;">Загрузка...</div>
-</div>
+    <!-- ID ПОЛЬЗОВАТЕЛЯ -->
+    <div id="user-info">Загрузка...</div>
+
+    <!-- СЧЕТЧИК -->
+    <div id="score">0</div>
+    
+    <!-- КНОПКА ТАПА AIR -->
+    <div class="tap-button" onclick="tap()">
+        AIR
+    </div>
+
+    <!-- КНОПКИ ВНИЗУ (ТОЛЬКО БОНУСЫ) -->
+    <div class="buttons-container">
+        <div class="action-button" onclick="openBonuses()">
+            🎁 Бонусы
+        </div>
+    </div>
 
     <!-- ===== ЭКРАН БОНУСОВ ===== -->
     <div id="bonusScreen" class="screen">
@@ -329,15 +384,14 @@
                 `⚠️ Запусти в Telegram бота`;
         }
 
-           // ═══════════════════════════════════════════════
-// 4. КЛЮЧИ ХРАНЕНИЯ (ИСПРАВЛЕНО!)
-// ═══════════════════════════════════════════════
-const storageKey = userId ? "tap_score_" + userId : "tap_score_guest";
-const channelBonusKey = userId ? "bonus_channel_" + userId : "bonus_channel_guest";
-const dailyBonusKey = userId ? "daily_bonus_" + userId : "daily_bonus_guest";
-const dailyTimeKey = userId ? "daily_time_" + userId : "daily_time_guest";
-const referralCountKey = userId ? "referral_count_" + userId : "referral_count_guest";
-const referralRewardsKey = userId ? "referral_rewards_" + userId : "referral_rewards_guest";
+        // ═══════════════════════════════════════════════
+        // 4. КЛЮЧИ ХРАНЕНИЯ
+        // ═══════════════════════════════════════════════
+        const storageKey = userId ? "tap_score_" + userId : "tap_score_guest";
+        const channelBonusKey = userId ? "bonus_channel_" + userId : "bonus_channel_guest";
+        const dailyTimeKey = userId ? "daily_time_" + userId : "daily_time_guest";
+        const referralCountKey = userId ? "referral_count_" + userId : "referral_count_guest";
+        const referralRewardsKey = userId ? "referral_rewards_" + userId : "referral_rewards_guest";
 
         // ═══════════════════════════════════════════════
         // 5. ЗАГРУЗКА СЧЁТА
@@ -356,74 +410,66 @@ const referralRewardsKey = userId ? "referral_rewards_" + userId : "referral_rew
             tg.HapticFeedback.impactOccurred('medium');
         }
 
-       // ═══════════════════════════════════════════════
-// 7. ЕЖЕДНЕВНЫЙ БОНУС (ИСПРАВЛЕНО!)
-// ═══════════════════════════════════════════════
-function claimDailyBonus() {
-    const lastClaimTime = localStorage.getItem(dailyTimeKey);
-    const now = Date.now();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-
-    if (lastClaimTime && (now - parseInt(lastClaimTime)) < twentyFourHours) {
-        const timeLeft = twentyFourHours - (now - parseInt(lastClaimTime));
-        const hoursLeft = Math.floor(timeLeft / (60 * 60 * 1000));
-        const minutesLeft = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
-        tg.showAlert(`⏳ Бонус уже получен! Следующий через ${hoursLeft}ч ${minutesLeft}м`);
-        return;
-    }
-
-    // Начисляем 100 монет
-    count += 100;
-    document.getElementById('score').innerText = count;
-    localStorage.setItem(storageKey, count);
-    
-    // Запоминаем время получения
-    localStorage.setItem(dailyTimeKey, now.toString());
-
-    // Обновляем интерфейс
-    updateDailyBonusUI();
-    
-    // Вибро и сообщение
-    tg.HapticFeedback.impactOccurred('heavy');
-    tg.showAlert('🎉 +100 AIR! Возвращайся завтра!');
-}
         // ═══════════════════════════════════════════════
-// 8. ОБНОВЛЕНИЕ UI ЕЖЕДНЕВНОГО БОНУСА (ИСПРАВЛЕНО!)
-// ═══════════════════════════════════════════════
-function updateDailyBonusUI() {
-    const lastClaimTime = localStorage.getItem(dailyTimeKey);
-    const now = Date.now();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-    const dailyButton = document.getElementById('dailyButton');
-    const dailyStatus = document.getElementById('dailyStatus');
-    const dailyTimer = document.getElementById('dailyTimer');
+        // 7. ЕЖЕДНЕВНЫЙ БОНУС
+        // ═══════════════════════════════════════════════
+        function claimDailyBonus() {
+            const lastClaimTime = localStorage.getItem(dailyTimeKey);
+            const now = Date.now();
+            const twentyFourHours = 24 * 60 * 60 * 1000;
 
-    if (!dailyButton || !dailyStatus || !dailyTimer) return;
+            if (lastClaimTime && (now - parseInt(lastClaimTime)) < twentyFourHours) {
+                const timeLeft = twentyFourHours - (now - parseInt(lastClaimTime));
+                const hoursLeft = Math.floor(timeLeft / (60 * 60 * 1000));
+                const minutesLeft = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+                tg.showAlert(`⏳ Бонус уже получен! Следующий через ${hoursLeft}ч ${minutesLeft}м`);
+                return;
+            }
 
-    if (lastClaimTime && (now - parseInt(lastClaimTime)) < twentyFourHours) {
-        // Бонус уже получен, показываем таймер
-        const timeLeft = twentyFourHours - (now - parseInt(lastClaimTime));
-        const hoursLeft = Math.floor(timeLeft / (60 * 60 * 1000));
-        const minutesLeft = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
-        const secondsLeft = Math.floor((timeLeft % (60 * 1000)) / 1000);
-        
-        dailyButton.style.opacity = '0.5';
-        dailyButton.disabled = true;
-        dailyStatus.innerHTML = '✅ Бонус получен!';
-        dailyStatus.style.color = '#ffd700';
-        dailyTimer.innerHTML = `⏳ Следующий бонус через: ${hoursLeft}ч ${minutesLeft}м ${secondsLeft}с`;
-        
-        // Обновляем таймер каждую секунду
-        setTimeout(updateDailyBonusUI, 1000);
-    } else {
-        // Можно получать бонус
-        dailyButton.style.opacity = '1';
-        dailyButton.disabled = false;
-        dailyStatus.innerHTML = '✨ Награда: 100 AIR';
-        dailyStatus.style.color = '#88ff88';
-        dailyTimer.innerHTML = '✅ Бонус доступен!';
-    }
-}
+            count += 100;
+            document.getElementById('score').innerText = count;
+            localStorage.setItem(storageKey, count);
+            localStorage.setItem(dailyTimeKey, now.toString());
+
+            updateDailyBonusUI();
+            tg.HapticFeedback.impactOccurred('heavy');
+            tg.showAlert('🎉 +100 AIR! Возвращайся завтра!');
+        }
+
+        // ═══════════════════════════════════════════════
+        // 8. ОБНОВЛЕНИЕ UI ЕЖЕДНЕВНОГО БОНУСА
+        // ═══════════════════════════════════════════════
+        function updateDailyBonusUI() {
+            const lastClaimTime = localStorage.getItem(dailyTimeKey);
+            const now = Date.now();
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            const dailyButton = document.getElementById('dailyButton');
+            const dailyStatus = document.getElementById('dailyStatus');
+            const dailyTimer = document.getElementById('dailyTimer');
+
+            if (!dailyButton || !dailyStatus || !dailyTimer) return;
+
+            if (lastClaimTime && (now - parseInt(lastClaimTime)) < twentyFourHours) {
+                const timeLeft = twentyFourHours - (now - parseInt(lastClaimTime));
+                const hoursLeft = Math.floor(timeLeft / (60 * 60 * 1000));
+                const minutesLeft = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+                const secondsLeft = Math.floor((timeLeft % (60 * 1000)) / 1000);
+                
+                dailyButton.style.opacity = '0.5';
+                dailyButton.disabled = true;
+                dailyStatus.innerHTML = '✅ Бонус получен!';
+                dailyStatus.style.color = '#ffd700';
+                dailyTimer.innerHTML = `⏳ Следующий бонус через: ${hoursLeft}ч ${minutesLeft}м ${secondsLeft}с`;
+                
+                setTimeout(updateDailyBonusUI, 1000);
+            } else {
+                dailyButton.style.opacity = '1';
+                dailyButton.disabled = false;
+                dailyStatus.innerHTML = '✨ Награда: 100 AIR';
+                dailyStatus.style.color = '#88ff88';
+                dailyTimer.innerHTML = '✅ Бонус доступен!';
+            }
+        }
 
         // ═══════════════════════════════════════════════
         // 9. БОНУС ЗА ПОДПИСКУ
@@ -566,7 +612,8 @@ function updateDailyBonusUI() {
         // ═══════════════════════════════════════════════
         function openBonuses() {
             document.getElementById('bonusScreen').classList.add('active');
-            tg.HapticFeedback.impactOccurred('light'); 
+            tg.HapticFeedback.impactOccurred('light');
+            
             const channelBonusClaimed = localStorage.getItem(channelBonusKey);
             const channelStatus = document.getElementById('channelBonusStatus');
             
@@ -576,7 +623,8 @@ function updateDailyBonusUI() {
             } else {
                 channelStatus.innerHTML = '🎁 Награда: 5000 AIR';
                 channelStatus.style.color = '#88ff88';
-            }    
+            }
+            
             updateDailyBonusUI();
         }
 
@@ -598,7 +646,7 @@ function updateDailyBonusUI() {
 
         // ═══════════════════════════════════════════════
         // 12. ЗАПУСК
-        //   // ═══════════════════════════════════════════════
+        // ═══════════════════════════════════════════════
         if (userId) {
             updateDailyBonusUI();
             initReferrals();
