@@ -12,6 +12,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding-bottom: 100px;
+            -webkit-tap-highlight-color: transparent; /* Убирает серый фон при тапе */
         }
         
         /* ЗАГОЛОВОК */
@@ -22,7 +23,7 @@
             text-shadow: 0 0 10px #00a8ff;
         }
         
-        /* КНОПКА ДРУЗЬЯ (ПОСЕРЕДИНЕ) */
+        /* КНОПКА ДРУЗЬЯ */
         .friends-top-button {
             font-size: 24px;
             font-weight: bold;
@@ -65,13 +66,12 @@
             color: gold;
             text-shadow: 0 0 20px #ffaa00;
         }
-        
-        /* КНОПКА ТАПА AIR */
+
+        /* КНОПКА ТАПА AIR - ТЕПЕРЬ С МУЛЬТИТАЧЕМ */
         .tap-button {
             font-size: 80px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.1s;
             user-select: none;
             background: #00a8ff;
             color: white;
@@ -81,13 +81,15 @@
             margin-top: 20px;
             box-shadow: 0 12px 0 #0077b3;
             border: none;
+            transition: transform 0.05s;
+            -webkit-touch-callout: none; /* Отключает меню при долгом нажатии */
         }
         .tap-button:active {
-            transform: scale(0.9);
-            box-shadow: 0 6px 0 #0077b3;
-        }
-        
-        /* КОНТЕЙНЕР КНОПОК ВНИЗУ */
+    transform: scale(0.9);
+    box-shadow: 0 6px 0 #0077b3;
+}
+
+/* КОНТЕЙНЕР КНОПОК ВНИЗУ */
         .buttons-container {
             position: fixed;
             bottom: 30px;
@@ -100,27 +102,27 @@
             padding: 0 20px;
         }
         
-        /* КНОПКА БОНУСЫ ВНИЗУ */
-        .action-button {
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.1s;
-            user-select: none;
-            background: #00a8ff;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 40px;
-            display: inline-block;
-            box-shadow: 0 8px 0 #0077b3;
-            border: none;
-            width: fit-content;
-            letter-spacing: 1px;
-        }
-        .action-button:active {
-            transform: scale(0.92);
-            box-shadow: 0 4px 0 #0077b3;
-        }
+        /* КНОПКА БОНУСЫ */
+.action-button {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.1s;
+    user-select: none;
+    background: #00a8ff;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 40px;
+    display: inline-block;
+    box-shadow: 0 8px 0 #0077b3;
+    border: none;
+    width: fit-content;
+    letter-spacing: 1px;
+}
+.action-button:active {
+    transform: scale(0.92);
+    box-shadow: 0 4px 0 #0077b3;
+}
         
         /* СТИЛИ ДЛЯ ЭКРАНОВ */
         .screen {
@@ -226,7 +228,7 @@
             border-radius: 15px;
             border: 1px solid #00a8ff;
             color: #00a8ff;
-            font-size: 16px;
+            font-size: 14px;
             word-break: break-all;
             margin: 15px 0;
         }
@@ -242,7 +244,7 @@
     <!-- ЗАГОЛОВОК -->
     <h1>✈️ TAP AIR</h1>
 
-    <!-- КНОПКА ДРУЗЬЯ - ПОСЕРЕДИНЕ МЕЖДУ TAP AIR И ID -->
+    <!-- КНОПКА ДРУЗЬЯ -->
     <div class="friends-top-button" onclick="openFriends()">
         👥 Друзья
     </div>
@@ -253,12 +255,12 @@
     <!-- СЧЕТЧИК -->
     <div id="score">0</div>
     
-    <!-- КНОПКА ТАПА AIR -->
-    <div class="tap-button" onclick="tap()">
+    <!-- КНОПКА ТАПА AIR - с поддержкой мультитач -->
+    <div class="tap-button" id="tapButton">
         AIR
     </div>
 
-    <!-- КНОПКИ ВНИЗУ (ТОЛЬКО БОНУСЫ) -->
+    <!-- КНОПКИ ВНИЗУ -->
     <div class="buttons-container">
         <div class="action-button" onclick="openBonuses()">
             🎁 Бонусы
@@ -339,9 +341,7 @@
             
             <div style="margin: 20px 0;">
                 <span style="font-size: 18px; color: white;">Твоя реферальная ссылка:</span>
-                <div id="referralLink" class="referral-link" onclick="copyReferralLink()">
-                    https://t.me/твой_бот?start=...
-                </div>
+                <div id="referralLink" class="referral-link"></div>
                 <button class="gold-button blue-button" onclick="copyReferralLink()" style="font-size: 18px; padding: 10px 20px; width: auto; margin-top: 5px;">
                     📋 Копировать ссылку
                 </button>
@@ -358,9 +358,9 @@
 
     <script>
         // ═══════════════════════════════════════════════
-        // 1. НАСТРОЙКИ - ЗАМЕНИ НА СВОЕГО БОТА!
+        // 1. НАСТРОЙКИ - ЗАМЕНИ НА ИМЯ СВОЕГО БОТА!
         // ═══════════════════════════════════════════════
-        const BOT_USERNAME = 'твой_бот_bot';
+        const BOT_USERNAME = 'OfficiallAIR_Bot'; // Например: 'aircoin_bot'
 
         // ═══════════════════════════════════════════════
         // 2. TELEGRAM
@@ -401,14 +401,53 @@
         document.getElementById('score').innerText = count;
 
         // ═══════════════════════════════════════════════
-        // 6. ТАП
+        // 6. МУЛЬТИТАЧ - НАЖАТИЕ НЕСКОЛЬКИМИ ПАЛЬЦАМИ
         // ═══════════════════════════════════════════════
-        function tap() {
+        const tapButton = document.getElementById('tapButton');
+        
+        // Флаг для защиты от слишком быстрых нажатий
+        let tapLock = false;
+        
+        function processTap() {
+            if (tapLock) return; // Защита от спама
+            
+            tapLock = true;
+            
+            // Начисляем монету
             count++;
             document.getElementById('score').innerText = count;
             localStorage.setItem(storageKey, count);
+            
+            // Визуальный эффект
+            tapButton.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                tapButton.style.transform = 'scale(1)';
+            }, 50);
+            
+            // Вибрация
             tg.HapticFeedback.impactOccurred('medium');
+            
+            // Снимаем блокировку через 50мс
+            setTimeout(() => {
+                tapLock = false;
+            }, 50);
         }
+
+        // Обработчик для мыши (компьютер)
+        tapButton.addEventListener('click', processTap);
+        
+        // Обработчик для касаний (телефон) - поддерживает мультитач
+        tapButton.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Отключаем стандартное поведение (зум и т.д.)
+            
+            // Считаем КАЖДЫЙ палец как отдельный тап
+            for (let i = 0; i < e.touches.length; i++) {
+                // Используем setTimeout, чтобы пальцы не накладывались друг на друга
+                setTimeout(() => {
+                    processTap();
+                }, i * 20); // Небольшая задержка между пальцами
+            }
+        }, { passive: false });
 
         // ═══════════════════════════════════════════════
         // 7. ЕЖЕДНЕВНЫЙ БОНУС
@@ -516,27 +555,34 @@
         function checkStartParam() {
             if (!userId) return;
             
+            // Получаем параметр start из ссылки
             const startParam = initData.start_param;
+            
             if (startParam && startParam.startsWith('ref_')) {
                 const referrerId = startParam.replace('ref_', '');
                 
+                // Не начисляем бонус самому себе
                 if (referrerId === userId.toString()) return;
                 
+                // Проверяем, не был ли этот пользователь уже приглашён
                 const invitedKey = `invited_${userId}_by_${referrerId}`;
                 const alreadyInvited = localStorage.getItem(invitedKey);
                 
                 if (!alreadyInvited) {
+                    // Отмечаем, что приглашение засчитано
                     localStorage.setItem(invitedKey, 'true');
                     
+                    // Увеличиваем счётчик пригласившего
                     const referrerCountKey = `referral_count_${referrerId}`;
                     let referrerCount = localStorage.getItem(referrerCountKey);
                     referrerCount = referrerCount ? parseInt(referrerCount) : 0;
                     referrerCount += 1;
                     localStorage.setItem(referrerCountKey, referrerCount);
                     
+                    // Проверяем и начисляем бонусы
                     checkAndAwardReferralBonus(referrerId, referrerCount);
                     
-                    tg.showAlert('🎉 Ты пришёл по реферальной ссылке!');
+                    tg.showAlert('🎉 Ты пришёл по реферальной ссылке! Твой друг получит бонус за приглашение.');
                 }
             }
         }
@@ -546,21 +592,25 @@
             let rewards = localStorage.getItem(rewardsKey);
             rewards = rewards ? parseInt(rewards) : 0;
             
+            // Сколько раз получили бонус (каждые 5 друзей)
             const bonusTimes = Math.floor(currentCount / 5);
             
             if (bonusTimes > rewards) {
                 const newBonuses = bonusTimes - rewards;
                 const bonusAmount = newBonuses * 500;
                 
+                // Начисляем AIR пригласившему
                 const userScoreKey = `tap_score_${userId}`;
                 let userScore = localStorage.getItem(userScoreKey);
                 userScore = userScore ? parseInt(userScore) : 0;
                 userScore += bonusAmount;
                 localStorage.setItem(userScoreKey, userScore);
                 
+                // Обновляем количество полученных наград
                 localStorage.setItem(rewardsKey, bonusTimes.toString());
                 
-                if (userId === window.userId) {
+                // Если это текущий пользователь - обновляем счёт на экране
+                if (userId == window.userId) {
                     count += bonusAmount;
                     document.getElementById('score').innerText = count;
                     tg.showAlert(`🎉 Ты получил ${bonusAmount} AIR за приглашение друзей!`);
@@ -576,11 +626,13 @@
             
             document.getElementById('referralCount').innerText = referralCount;
             
+            // Прогресс до следующего бонуса
             const nextBonus = (Math.floor(referralCount / 5) + 1) * 5;
-            const progress = (referralCount % 5) * 20;
+            const progress = (referralCount % 5) * 20; // 20% за каждого друга
             document.getElementById('progressToNextBonus').innerHTML = `${referralCount}/${nextBonus} друзей`;
             document.getElementById('progressBar').style.width = progress + '%';
             
+            // История наград
             const rewardsHistory = document.getElementById('rewardsHistory');
             if (rewards > 0) {
                 let historyText = '';
@@ -592,6 +644,7 @@
                 rewardsHistory.innerHTML = 'Пока нет наград. Пригласи 5 друзей!';
             }
             
+            // Генерируем уникальную реферальную ссылку
             const botLink = BOT_USERNAME.startsWith('@') ? BOT_USERNAME.substring(1) : BOT_USERNAME;
             const referralLink = `https://t.me/${botLink}?start=ref_${userId}`;
             document.getElementById('referralLink').innerHTML = referralLink;
