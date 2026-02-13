@@ -87,7 +87,7 @@
             background: #3a4a5a;
         }
         
-        /* ОСНОВНОЙ КОНТЕНТ (СДВИНУТ ВНИЗ ИЗ-ЗА ШАПКИ) */
+        /* ОСНОВНОЙ КОНТЕНТ */
         .content {
             margin-top: 80px;
         }
@@ -154,7 +154,6 @@
             box-shadow: 0 12px 0 #0077b3;
             border: none;
             transition: transform 0.05s;
-            -webkit-touch-callout: none;
         }
         .tap-button:active {
             transform: scale(0.9);
@@ -186,14 +185,12 @@
             box-shadow: 0 8px 0 #0077b3;
             border: none;
             width: fit-content;
-            letter-spacing: 1px;
         }
         .action-button:active {
             transform: scale(0.92);
             box-shadow: 0 4px 0 #0077b3;
         }
         
-        /* СТИЛИ ДЛЯ ЭКРАНОВ */
         .screen {
             position: fixed;
             top: 0;
@@ -227,10 +224,6 @@
             justify-content: center;
             box-shadow: 0 8px 0 #aa2222;
         }
-        .close-button:active {
-            transform: scale(0.9);
-            box-shadow: 0 4px 0 #aa2222;
-        }
         
         .card {
             background: #1a2a3a;
@@ -248,7 +241,6 @@
             margin-bottom: 15px;
         }
         
-        /* ТАБЛИЦА ЛИДЕРОВ */
         .leaderboard-table {
             width: 100%;
             margin-top: 20px;
@@ -260,20 +252,10 @@
             background: #0f1a1f;
             margin: 5px 0;
             border-radius: 12px;
-            font-size: 18px;
             border-left: 4px solid transparent;
         }
         .leaderboard-row.top-1 {
             border-left-color: gold;
-            background: #1a2a1f;
-        }
-        .leaderboard-row.top-2 {
-            border-left-color: silver;
-            background: #1a1f2a;
-        }
-        .leaderboard-row.top-3 {
-            border-left-color: #cd7f32;
-            background: #2a1f1a;
         }
         .leaderboard-rank {
             font-weight: bold;
@@ -284,7 +266,6 @@
             flex: 1;
             text-align: left;
             margin-left: 10px;
-            color: white;
         }
         .leaderboard-score {
             font-weight: bold;
@@ -303,8 +284,6 @@
             font-size: 22px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.1s;
-            user-select: none;
             background: linear-gradient(145deg, #ffd700, #ffb700);
             color: #1a2a3a;
             padding: 15px 25px;
@@ -319,7 +298,6 @@
         }
         .gold-button:active {
             transform: scale(0.95);
-            box-shadow: 0 4px 0 #b87c00;
         }
         .blue-button {
             background: linear-gradient(145deg, #00a8ff, #0077b3);
@@ -358,166 +336,76 @@
     </style>
 </head>
 <body>
-    <!-- ШАПКА С КНОПКОЙ МЕНЮ -->
     <div class="header">
         <div class="placeholder"></div>
         <div class="menu-button" onclick="toggleMenu()">☰</div>
     </div>
     
-    <!-- ВЫПАДАЮЩЕЕ МЕНЮ -->
     <div id="dropdownMenu" class="dropdown-menu">
         <div class="menu-item" onclick="openLeaderboard(); toggleMenu();">
             🏆 Leaderboards
         </div>
-        <!-- Сюда потом можно добавить другие пункты -->
     </div>
     
     <div class="content">
         <h1>✈️ TAP AIR</h1>
-
-        <!-- КНОПКА ДРУЗЬЯ -->
-        <div class="friends-top-button" onclick="openFriends()">
-            👥 Друзья
-        </div>
-
-        <!-- ID ПОЛЬЗОВАТЕЛЯ -->
+        <div class="friends-top-button" onclick="openFriends()">👥 Друзья</div>
         <div id="user-info">Загрузка...</div>
-
-        <!-- СЧЕТЧИК -->
         <div id="score">0</div>
-        
-        <!-- КНОПКА ТАПА AIR -->
-        <div class="tap-button" id="tapButton">
-            AIR
-        </div>
+        <div class="tap-button" id="tapButton">AIR</div>
     </div>
 
-    <!-- КНОПКИ ВНИЗУ -->
     <div class="buttons-container">
-        <div class="action-button" onclick="openBonuses()">
-            🎁 Бонусы
-        </div>
+        <div class="action-button" onclick="openBonuses()">🎁 Бонусы</div>
     </div>
 
-    <!-- ===== ЭКРАН БОНУСОВ ===== -->
+    <!-- ЭКРАН БОНУСОВ -->
     <div id="bonusScreen" class="screen">
         <div class="close-button" onclick="closeBonuses()">✕</div>
-        
         <div class="card">
             <div class="card-title">📅 ЕЖЕДНЕВНЫЙ</div>
-            <div class="card-description">
-                Заходи каждый день и получай<br>
-                <span style="color: #ffd700; font-size: 32px;">+100 AIR</span>
-            </div>
-            
-            <button class="gold-button blue-button" onclick="claimDailyBonus()" id="dailyButton">
-                🎁 Забрать награду
-            </button>
-            
-            <div id="dailyStatus" class="reward-text">
-                ✨ Награда: 100 AIR
-            </div>
+            <div class="card-description">+100 AIR каждый день</div>
+            <button class="gold-button blue-button" onclick="claimDailyBonus()" id="dailyButton">🎁 Забрать</button>
+            <div id="dailyStatus" class="reward-text">✨ Награда: 100 AIR</div>
             <div id="dailyTimer" class="timer"></div>
         </div>
-
         <div class="card">
             <div class="card-title">📢 ПОДПИШИСЬ</div>
-            <div class="card-description">
-                На канал AIR COIN<br>
-                и получи 5000 AIR монет!
-            </div>
-            
-            <a href="https://t.me/air_coinb" 
-               class="gold-button" 
-               target="_blank">
-                🔗 Перейти в канал
-            </a>
-            
-            <button class="gold-button blue-button" onclick="claimChannelBonus()" style="margin-top: 10px;">
-                🎁 Получить 5000 AIR
-            </button>
-            
-            <div id="channelBonusStatus" class="reward-text">
-                🎁 Награда: 5000 AIR
-            </div>
+            <div class="card-description">+5000 AIR за подписку</div>
+            <a href="https://t.me/air_coinb" class="gold-button" target="_blank">🔗 Перейти</a>
+            <button class="gold-button blue-button" onclick="claimChannelBonus()">🎁 Получить 5000</button>
+            <div id="channelBonusStatus" class="reward-text">🎁 Награда: 5000 AIR</div>
         </div>
     </div>
 
-    <!-- ===== ЭКРАН ДРУЗЕЙ ===== -->
+    <!-- ЭКРАН ДРУЗЕЙ -->
     <div id="friendsScreen" class="screen">
         <div class="close-button" onclick="closeFriends()">✕</div>
-        
         <div class="card">
             <div class="card-title">👥 ПРИГЛАШАЙ ДРУЗЕЙ</div>
-            <div class="card-description">
-                Пригласи 5 друзей — получи +500 AIR!<br>
-                <span style="color: #88ff88;">Чем больше друзей, тем больше бонусов!</span>
-            </div>
-            
-            <div style="margin: 20px 0;">
-                <span style="font-size: 20px; color: white;">Приглашено друзей:</span>
-                <div id="referralCount" class="counter">0</div>
-            </div>
-            
-            <div style="background: #0a1a1f; padding: 15px; border-radius: 15px; margin: 15px 0;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <span>🎁 До награды:</span>
-                    <span id="progressToNextBonus">5 друзей</span>
-                </div>
-                <div style="background: #1a2a3a; height: 20px; border-radius: 10px; overflow: hidden;">
-                    <div id="progressBar" style="background: #ffd700; width: 0%; height: 100%; transition: width 0.3s;"></div>
-                </div>
-            </div>
-            
-            <div style="margin: 20px 0;">
-                <span style="font-size: 18px; color: white;">Твоя реферальная ссылка:</span>
-                <div id="referralLink" class="referral-link"></div>
-                <button class="gold-button blue-button" onclick="copyReferralLink()" style="font-size: 18px; padding: 10px 20px; width: auto; margin-top: 5px;">
-                    📋 Копировать ссылку
-                </button>
-            </div>
-            
-            <div style="margin-top: 25px;">
-                <span style="font-size: 20px; color: #ffd700;">🎉 Полученные награды</span>
-                <div id="rewardsHistory" style="margin-top: 15px; color: #88ff88;">
-                    Пока нет наград
-                </div>
-            </div>
+            <div class="card-description">+500 AIR за 5 друзей</div>
+            <div><span>Приглашено:</span><div id="referralCount" class="counter">0</div></div>
+            <div id="progressToNextBonus"></div>
+            <div id="referralLink" class="referral-link"></div>
+            <button class="gold-button blue-button" onclick="copyReferralLink()">📋 Копировать</button>
+            <div id="rewardsHistory"></div>
         </div>
     </div>
 
-    <!-- ===== ЭКРАН ЛИДЕРОВ ===== -->
+    <!-- ЭКРАН ЛИДЕРОВ -->
     <div id="leaderboardScreen" class="screen">
         <div class="close-button" onclick="closeLeaderboard()">✕</div>
-        
-        <div class="card" style="width: 90%; max-width: 450px;">
+        <div class="card">
             <div class="card-title">🏆 ГЛОБАЛЬНЫЙ РЕЙТИНГ</div>
-            
-            <!-- Топ-10 игроков -->
-            <div id="leaderboardList" class="leaderboard-table">
-                <div class="loading">Загрузка рейтинга...</div>
-            </div>
-            
-            <!-- Текущее место игрока -->
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #2a3a4a;">
-                <div style="font-size: 18px; color: #88ff88; margin-bottom: 10px;">Твоя позиция</div>
-                <div id="playerRank" class="leaderboard-row current-player" style="justify-content: center;">
-                    Загрузка...
-                </div>
-            </div>
+            <div id="leaderboardList" class="leaderboard-table"><div class="loading">Загрузка...</div></div>
+            <div id="playerRank" class="leaderboard-row current-player"></div>
         </div>
     </div>
 
     <script>
-        // ═══════════════════════════════════════════════
-        // 1. НАСТРОЙКИ
-        // ═══════════════════════════════════════════════
         const API_BASE_URL = 'http://localhost:3001';
-        const BOT_USERNAME = 'твой_бот_bot'; // ЗАМЕНИТЬ!
+        const BOT_USERNAME = 'твой_бот_bot';
 
-        // ═══════════════════════════════════════════════
-        // 2. TELEGRAM
-        // ═══════════════════════════════════════════════
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
@@ -527,81 +415,48 @@
         const userName = initData.user?.first_name || "Игрок";
         const userUsername = initData.user?.username;
 
-        // ═══════════════════════════════════════════════
-        // 3. ПОКАЗЫВАЕМ ID
-        // ═══════════════════════════════════════════════
         if (userId) {
-            document.getElementById('user-info').innerHTML = 
-                `🆔 Твой ID: <strong>${userId}</strong> · 👤 ${userName}`;
+            document.getElementById('user-info').innerHTML = `🆔 Твой ID: <strong>${userId}</strong> · 👤 ${userName}`;
         } else {
-            document.getElementById('user-info').innerHTML = 
-                `⚠️ Запусти в Telegram бота`;
+            document.getElementById('user-info').innerHTML = `⚠️ Запусти в Telegram бота`;
         }
 
-        // ═══════════════════════════════════════════════
-        // 4. КЛЮЧИ ХРАНЕНИЯ
-        // ═══════════════════════════════════════════════
         const storageKey = userId ? "tap_score_" + userId : "tap_score_guest";
         const channelBonusKey = userId ? "bonus_channel_" + userId : "bonus_channel_guest";
         const dailyTimeKey = userId ? "daily_time_" + userId : "daily_time_guest";
         const referralCountKey = userId ? "referral_count_" + userId : "referral_count_guest";
         const referralRewardsKey = userId ? "referral_rewards_" + userId : "referral_rewards_guest";
 
-        // ═══════════════════════════════════════════════
-        // 5. ЗАГРУЗКА СЧЁТА
-        // ═══════════════════════════════════════════════
         let savedScore = localStorage.getItem(storageKey);
         let count = savedScore ? parseInt(savedScore) : 0;
         document.getElementById('score').innerText = count;
 
-        // ═══════════════════════════════════════════════
-        // 6. МУЛЬТИТАЧ
-        // ═══════════════════════════════════════════════
         const tapButton = document.getElementById('tapButton');
         let tapLock = false;
         
         function processTap() {
             if (tapLock) return;
-            
             tapLock = true;
-            
             count++;
             document.getElementById('score').innerText = count;
             localStorage.setItem(storageKey, count);
-            
             updateScoreOnServer();
-            
-            tapButton.style.transform = 'scale(0.9)';
-            setTimeout(() => {
-                tapButton.style.transform = 'scale(1)';
-            }, 50);
-            
             tg.HapticFeedback.impactOccurred('medium');
-            
-            setTimeout(() => {
-                tapLock = false;
-            }, 50);
+            setTimeout(() => { tapLock = false; }, 50);
         }
 
         tapButton.addEventListener('click', processTap);
         tapButton.addEventListener('touchstart', (e) => {
             e.preventDefault();
             for (let i = 0; i < e.touches.length; i++) {
-                setTimeout(() => {
-                    processTap();
-                }, i * 20);
+                setTimeout(() => { processTap(); }, i * 20);
             }
         }, { passive: false });
 
-        // ═══════════════════════════════════════════════
-        // 7. ОТПРАВКА СЧЁТА НА СЕРВЕР
-        // ═══════════════════════════════════════════════
         let updateTimeout;
         function updateScoreOnServer() {
             if (!userId) return;
-            
             if (updateTimeout) clearTimeout(updateTimeout);
-            
             updateTimeout = setTimeout(() => {
                 fetch(`${API_BASE_URL}/api/update-score`, {
                     method: 'POST',
@@ -612,328 +467,201 @@
                         first_name: userName,
                         score: count
                     })
-                }).catch(err => console.error('Error updating score:', err));
+                }).catch(err => console.error(err));
             }, 5000);
         }
 
-        // ═══════════════════════════════════════════════
-        // 8. УПРАВЛЕНИЕ МЕНЮ
-        // ═══════════════════════════════════════════════
         function toggleMenu() {
-            const menu = document.getElementById('dropdownMenu');
-            menu.classList.toggle('active');
+            document.getElementById('dropdownMenu').classList.toggle('active');
             tg.HapticFeedback.impactOccurred('light');
         }
 
         document.addEventListener('click', (e) => {
             const menu = document.getElementById('dropdownMenu');
-            const menuButton = document.querySelector('.menu-button');
-            
-            if (!menu.contains(e.target) && !menuButton.contains(e.target)) {
-                menu.classList.remove('active');
-            }
+            const btn = document.querySelector('.menu-button');
+            if (!menu.contains(e.target) && !btn.contains(e.target)) menu.classList.remove('active');
         });
 
-        // ═══════════════════════════════════════════════
-        // 9. ЛИДЕРБОРД
-        // ═══════════════════════════════════════════════
         async function openLeaderboard() {
             document.getElementById('leaderboardScreen').classList.add('active');
             tg.HapticFeedback.impactOccurred('light');
-            
             await loadLeaderboard();
             await loadPlayerRank();
         }
 
         function closeLeaderboard() {
             document.getElementById('leaderboardScreen').classList.remove('active');
-            tg.HapticFeedback.impactOccurred('light');
         }
 
         async function loadLeaderboard() {
-            const leaderboardList = document.getElementById('leaderboardList');
-            leaderboardList.innerHTML = '<div class="loading">Загрузка рейтинга...</div>';
-            
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = '<div class="loading">Загрузка...</div>';
             try {
-                const response = await fetch(`${API_BASE_URL}/api/leaderboard`);
-                const players = await response.json();
-                
-                if (players.length === 0) {
-                    leaderboardList.innerHTML = '<div style="padding: 20px;">Пока нет участников</div>';
+                const res = await fetch(`${API_BASE_URL}/api/leaderboard`);
+                const players = await res.json();
+                if (!players.length) {
+                    list.innerHTML = '<div>Пока нет участников</div>';
                     return;
                 }
-                
                 let html = '';
-                players.forEach((player, index) => {
-                    const rankClass = index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : '';
-                    const name = player.first_name || player.username || `Player ${player.user_id.slice(-4)}`;
-                    
-                    html += `
-                        <div class="leaderboard-row ${rankClass}">
-                            <span class="leaderboard-rank">#${index + 1}</span>
-                            <span class="leaderboard-name">${name}</span>
-                            <span class="leaderboard-score">${player.score.toLocaleString()}</span>
-                        </div>
-                    `;
+                players.forEach((p, i) => {
+                    const cls = i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : '';
+                    const name = p.first_name || p.username || `Player ${p.user_id.slice(-4)}`;
+                    html += `<div class="leaderboard-row ${cls}"><span class="leaderboard-rank">#${i+1}</span><span class="leaderboard-name">${name}</span><span class="leaderboard-score">${p.score}</span></div>`;
                 });
-                
-                leaderboardList.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading leaderboard:', error);
-                leaderboardList.innerHTML = '<div style="color: #ff8888;">Ошибка загрузки рейтинга</div>';
+                list.innerHTML = html;
+            } catch {
+                list.innerHTML = '<div style="color:#ff8888;">Ошибка</div>';
             }
         }
 
         async function loadPlayerRank() {
             if (!userId) return;
-            
-            const playerRank = document.getElementById('playerRank');
-            
+            const rankDiv = document.getElementById('playerRank');
             try {
-                const response = await fetch(`${API_BASE_URL}/api/player-rank/${userId}`);
-                const data = await response.json();
-                
-                if (data.rank) {
-                    playerRank.innerHTML = `
-                        <span class="leaderboard-rank">#${data.rank}</span>
-                        <span class="leaderboard-name">${userName}</span>
-                        <span class="leaderboard-score">${data.score.toLocaleString()}</span>
-                    `;
-                } else {
-                    playerRank.innerHTML = 'Ты пока не в рейтинге. Тапай больше!';
-                }
-            } catch (error) {
-                console.error('Error loading player rank:', error);
-                playerRank.innerHTML = 'Ошибка загрузки';
+                const res = await fetch(`${API_BASE_URL}/api/player-rank/${userId}`);
+                const data = await res.json();
+                if (data.rank) rankDiv.innerHTML = `<span class="leaderboard-rank">#${data.rank}</span><span class="leaderboard-name">${userName}</span><span class="leaderboard-score">${data.score}</span>`;
+                else rankDiv.innerHTML = 'Ты пока не в рейтинге';
+            } catch {
+                rankDiv.innerHTML = 'Ошибка';
             }
         }
 
-        // ═══════════════════════════════════════════════
-        // 10. ЕЖЕДНЕВНЫЙ БОНУС
-        // ═══════════════════════════════════════════════
         function claimDailyBonus() {
-            const lastClaimTime = localStorage.getItem(dailyTimeKey);
+            const last = localStorage.getItem(dailyTimeKey);
             const now = Date.now();
-            const twentyFourHours = 24 * 60 * 60 * 1000;
-
-            if (lastClaimTime && (now - parseInt(lastClaimTime)) < twentyFourHours) {
-                const timeLeft = twentyFourHours - (now - parseInt(lastClaimTime));
-                const hoursLeft = Math.floor(timeLeft / (60 * 60 * 1000));
-                const minutesLeft = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
-                tg.showAlert(`⏳ Бонус уже получен! Следующий через ${hoursLeft}ч ${minutesLeft}м`);
+            const day = 86400000;
+            if (last && (now - parseInt(last)) < day) {
+                const left = day - (now - parseInt(last));
+                const h = Math.floor(left / 3600000);
+                const m = Math.floor((left % 3600000) / 60000);
+                tg.showAlert(`⏳ Бонус через ${h}ч ${m}м`);
                 return;
             }
-
             count += 100;
             document.getElementById('score').innerText = count;
             localStorage.setItem(storageKey, count);
             localStorage.setItem(dailyTimeKey, now.toString());
-
             updateDailyBonusUI();
             updateScoreOnServer();
-            
-            tg.HapticFeedback.impactOccurred('heavy');
-            tg.showAlert('🎉 +100 AIR! Возвращайся завтра!');
+            tg.showAlert('🎉 +100 AIR!');
         }
 
-        // ═══════════════════════════════════════════════
-        // 11. ОБНОВЛЕНИЕ UI ЕЖЕДНЕВНОГО БОНУСА
-        // ═══════════════════════════════════════════════
         function updateDailyBonusUI() {
-            const lastClaimTime = localStorage.getItem(dailyTimeKey);
+            const last = localStorage.getItem(dailyTimeKey);
             const now = Date.now();
-            const twentyFourHours = 24 * 60 * 60 * 1000;
-            const dailyButton = document.getElementById('dailyButton');
-            const dailyStatus = document.getElementById('dailyStatus');
-            const dailyTimer = document.getElementById('dailyTimer');
-
-            if (!dailyButton || !dailyStatus || !dailyTimer) return;
-
-            if (lastClaimTime && (now - parseInt(lastClaimTime)) < twentyFourHours) {
-                const timeLeft = twentyFourHours - (now - parseInt(lastClaimTime));
-                const hoursLeft = Math.floor(timeLeft / (60 * 60 * 1000));
-                const minutesLeft = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
-                const secondsLeft = Math.floor((timeLeft % (60 * 1000)) / 1000);
-                
-                dailyButton.style.opacity = '0.5';
-                dailyButton.disabled = true;
-                dailyStatus.innerHTML = '✅ Бонус получен!';
-                dailyStatus.style.color = '#ffd700';
-                dailyTimer.innerHTML = `⏳ Следующий бонус через: ${hoursLeft}ч ${minutesLeft}м ${secondsLeft}с`;
-                
+            const day = 86400000;
+            const btn = document.getElementById('dailyButton');
+            const status = document.getElementById('dailyStatus');
+            const timer = document.getElementById('dailyTimer');
+            if (!btn) return;
+            if (last && (now - parseInt(last)) < day) {
+                const left = day - (now - parseInt(last));
+                const h = Math.floor(left / 3600000);
+                const m = Math.floor((left % 3600000) / 60000);
+                const s = Math.floor((left % 60000) / 1000);
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                status.innerHTML = '✅ Бонус получен';
+                timer.innerHTML = `⏳ ${h}ч ${m}м ${s}с`;
                 setTimeout(updateDailyBonusUI, 1000);
             } else {
-                dailyButton.style.opacity = '1';
-                dailyButton.disabled = false;
-                dailyStatus.innerHTML = '✨ Награда: 100 AIR';
-                dailyStatus.style.color = '#88ff88';
-                dailyTimer.innerHTML = '✅ Бонус доступен!';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                status.innerHTML = '✨ Награда: 100 AIR';
+                timer.innerHTML = '✅ Доступен';
             }
         }
 
-        // ═══════════════════════════════════════════════
-        // 12. БОНУС ЗА ПОДПИСКУ
-        // ═══════════════════════════════════════════════
         function claimChannelBonus() {
-            const bonusClaimed = localStorage.getItem(channelBonusKey);
-            
-            if (bonusClaimed === 'claimed') {
-                tg.showAlert('❌ Ты уже получил этот бонус!');
+            if (localStorage.getItem(channelBonusKey) === 'claimed') {
+                tg.showAlert('❌ Уже получен');
                 return;
             }
-            
             count += 5000;
             document.getElementById('score').innerText = count;
             localStorage.setItem(storageKey, count);
             localStorage.setItem(channelBonusKey, 'claimed');
-            
             updateScoreOnServer();
-            
-            const statusDiv = document.getElementById('channelBonusStatus');
-            statusDiv.innerHTML = '✅ Бонус получен! +5000 AIR';
-            statusDiv.style.color = '#ffd700';
-            
-            tg.HapticFeedback.impactOccurred('heavy');
-            tg.showAlert('🎉 Ты получил 5000 AIR!');
+            document.getElementById('channelBonusStatus').innerHTML = '✅ +5000 AIR';
+            tg.showAlert('🎉 +5000 AIR!');
         }
 
-        // ═══════════════════════════════════════════════
-        // 13. РЕФЕРАЛЬНАЯ СИСТЕМА
-        // ═══════════════════════════════════════════════
         function initReferrals() {
             if (!userId) return;
-            
-            let referralCount = localStorage.getItem(referralCountKey);
-            if (referralCount === null) {
-                referralCount = 0;
-                localStorage.setItem(referralCountKey, referralCount);
-            } else {
-                referralCount = parseInt(referralCount);
-            }
-            
+            let c = localStorage.getItem(referralCountKey);
+            c = c ? parseInt(c) : 0;
+            localStorage.setItem(referralCountKey, c);
             updateReferralUI();
             checkStartParam();
         }
 
         function checkStartParam() {
-            if (!userId) return;
-            
-            const startParam = initData.start_param;
-            
-            if (startParam && startParam.startsWith('ref_')) {
-                const referrerId = startParam.replace('ref_', '');
-                
-                if (referrerId === userId.toString()) return;
-                
-                const invitedKey = `invited_${userId}_by_${referrerId}`;
-                const alreadyInvited = localStorage.getItem(invitedKey);
-                
-                if (!alreadyInvited) {
-                    localStorage.setItem(invitedKey, 'true');
-                    
-                    const referrerCountKey = `referral_count_${referrerId}`;
-                    let referrerCount = localStorage.getItem(referrerCountKey);
-                    referrerCount = referrerCount ? parseInt(referrerCount) : 0;
-                    referrerCount += 1;
-                    localStorage.setItem(referrerCountKey, referrerCount);
-                    
-                    checkAndAwardReferralBonus(referrerId, referrerCount);
-                    
-                    tg.showAlert('🎉 Ты пришёл по реферальной ссылке!');
-                }
-            }
+            const sp = initData.start_param;
+            if (!sp || !sp.startsWith('ref_')) return;
+            const rid = sp.replace('ref_', '');
+            if (rid === userId.toString()) return;
+            const key = `invited_${userId}_by_${rid}`;
+            if (localStorage.getItem(key)) return;
+            localStorage.setItem(key, 'true');
+            let rc = localStorage.getItem(`referral_count_${rid}`);
+            rc = rc ? parseInt(rc) + 1 : 1;
+            localStorage.setItem(`referral_count_${rid}`, rc);
+            checkAndAwardReferralBonus(rid, rc);
+            tg.showAlert('🎉 Ты по ссылке друга!');
         }
 
-        function checkAndAwardReferralBonus(userId, currentCount) {
-            const rewardsKey = `referral_rewards_${userId}`;
-            let rewards = localStorage.getItem(rewardsKey);
-            rewards = rewards ? parseInt(rewards) : 0;
-            
-            const bonusTimes = Math.floor(currentCount / 5);
-            
-            if (bonusTimes > rewards) {
-                const newBonuses = bonusTimes - rewards;
-                const bonusAmount = newBonuses * 500;
-                
-                const userScoreKey = `tap_score_${userId}`;
-                let userScore = localStorage.getItem(userScoreKey);
-                userScore = userScore ? parseInt(userScore) : 0;
-                userScore += bonusAmount;
-                localStorage.setItem(userScoreKey, userScore);
-                
-                localStorage.setItem(rewardsKey, bonusTimes.toString());
-                
-                if (userId == window.userId) {
-                    count += bonusAmount;
+        function checkAndAwardReferralBonus(uid, cnt) {
+            const rkey = `referral_rewards_${uid}`;
+            let r = localStorage.getItem(rkey);
+            r = r ? parseInt(r) : 0;
+            const bt = Math.floor(cnt / 5);
+            if (bt > r) {
+                const bonus = (bt - r) * 500;
+                const skey = `tap_score_${uid}`;
+                let sc = localStorage.getItem(skey);
+                sc = sc ? parseInt(sc) + bonus : bonus;
+                localStorage.setItem(skey, sc);
+                localStorage.setItem(rkey, bt.toString());
+                if (uid == userId) {
+                    count += bonus;
                     document.getElementById('score').innerText = count;
-                    tg.showAlert(`🎉 Ты получил ${bonusAmount} AIR за приглашение друзей!`);
+                    tg.showAlert(`🎉 +${bonus} AIR за друзей!`);
                 }
             }
         }
 
         function updateReferralUI() {
             if (!userId) return;
-            
-            const referralCount = parseInt(localStorage.getItem(referralCountKey) || '0');
-            const rewards = parseInt(localStorage.getItem(referralRewardsKey) || '0');
-            
-            document.getElementById('referralCount').innerText = referralCount;
-            
-            const nextBonus = (Math.floor(referralCount / 5) + 1) * 5;
-            const progress = (referralCount % 5) * 20;
-            document.getElementById('progressToNextBonus').innerHTML = `${referralCount}/${nextBonus} друзей`;
-            document.getElementById('progressBar').style.width = progress + '%';
-            
-            const rewardsHistory = document.getElementById('rewardsHistory');
-            if (rewards > 0) {
-                let historyText = '';
-                for (let i = 1; i <= rewards; i++) {
-                    historyText += `🎁 +500 AIR (${i * 5} друзей)<br>`;
-                }
-                rewardsHistory.innerHTML = historyText;
-            } else {
-                rewardsHistory.innerHTML = 'Пока нет наград. Пригласи 5 друзей!';
-            }
-            
-            const botLink = BOT_USERNAME.startsWith('@') ? BOT_USERNAME.substring(1) : BOT_USERNAME;
-            const referralLink = `https://t.me/${botLink}?start=ref_${userId}`;
-            document.getElementById('referralLink').innerHTML = referralLink;
+            const cnt = parseInt(localStorage.getItem(referralCountKey) || '0');
+            document.getElementById('referralCount').innerText = cnt;
+            const next = (Math.floor(cnt / 5) + 1) * 5;
+            document.getElementById('progressToNextBonus').innerText = `${cnt}/${next} друзей`;
+            const link = `https://t.me/${BOT_USERNAME.replace('@','')}?start=ref_${userId}`;
+            document.getElementById('referralLink').innerText = link;
+            const rew = parseInt(localStorage.getItem(referralRewardsKey) || '0');
+            const hist = document.getElementById('rewardsHistory');
+            if (rew > 0) {
+                let h = '';
+                for (let i=1; i<=rew; i++) h += `🎁 +500 AIR (${i*5})<br>`;
+                hist.innerHTML = h;
+            } else hist.innerHTML = 'Пока нет наград';
         }
 
         function copyReferralLink() {
             const link = document.getElementById('referralLink').innerText;
-            navigator.clipboard.writeText(link).then(() => {
-                tg.showAlert('✅ Реферальная ссылка скопирована!');
-                tg.HapticFeedback.impactOccurred('light');
-            }).catch(() => {
-                tg.showAlert('❌ Не удалось скопировать ссылку');
-            });
+            navigator.clipboard.writeText(link).then(() => tg.showAlert('✅ Скопировано!'));
         }
 
-        // ═══════════════════════════════════════════════
-        // 14. УПРАВЛЕНИЕ ЭКРАНАМИ БОНУСОВ И ДРУЗЕЙ
-        // ═══════════════════════════════════════════════
         function openBonuses() {
             document.getElementById('bonusScreen').classList.add('active');
             tg.HapticFeedback.impactOccurred('light');
-            
-            const channelBonusClaimed = localStorage.getItem(channelBonusKey);
-            const channelStatus = document.getElementById('channelBonusStatus');
-            
-            if (channelBonusClaimed === 'claimed') {
-                channelStatus.innerHTML = '✅ Бонус получен! +5000 AIR';
-                channelStatus.style.color = '#ffd700';
-            } else {
-                channelStatus.innerHTML = '🎁 Награда: 5000 AIR';
-                channelStatus.style.color = '#88ff88';
-            }
-            
             updateDailyBonusUI();
         }
 
         function closeBonuses() {
             document.getElementById('bonusScreen').classList.remove('active');
-            tg.HapticFeedback.impactOccurred('light');
         }
 
         function openFriends() {
@@ -944,16 +672,11 @@
 
         function closeFriends() {
             document.getElementById('friendsScreen').classList.remove('active');
-            tg.HapticFeedback.impactOccurred('light');
         }
 
-        // ═══════════════════════════════════════════════
-        // 15. ЗАПУСК
-        // ═══════════════════════════════════════════════
         if (userId) {
             updateDailyBonusUI();
             initReferrals();
-            window.userId = userId;
         }
     </script>
 </body>
