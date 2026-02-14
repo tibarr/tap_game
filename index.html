@@ -271,6 +271,13 @@
             font-weight: bold;
             color: #88ff88;
         }
+        .leaderboard-error, .leaderboard-empty {
+            padding: 20px;
+            text-align: center;
+            color: #ffaa88;
+            font-size: 14px;
+        }
+        .leaderboard-error { color: #ff8888; }
         .current-player {
             background: #1a3a4a;
             border: 1px solid #00a8ff;
@@ -403,8 +410,10 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:3001';
-        const BOT_USERNAME = 'твой_бот_bot';
+        // Для локальной разработки — localhost. На GitHub Pages подставь URL своего бэкенда (Render, Railway и т.д.)
+        const isProduction = window.location.hostname.includes('github.io');
+        const API_BASE_URL = isProduction ? 'https://YOUR_BACKEND_URL' : 'http://localhost:3001';
+        const BOT_USERNAME = 'твой_бот_bot'; // Замени на @username своего бота в Telegram
 
         const tg = window.Telegram.WebApp;
         tg.ready();
@@ -496,23 +505,35 @@
         async function loadLeaderboard() {
             const list = document.getElementById('leaderboardList');
             list.innerHTML = '<div class="loading">Загрузка...</div>';
+            const errMsg = 'Сервер рейтинга недоступен. Задеплой бэкенд и укажи его URL в index.html (API_BASE_URL).';
             try {
                 const res = await fetch(`${API_BASE_URL}/api/leaderboard`);
-                const players = await res.json();
+                if (!res.ok) {
+                    list.innerHTML = `<div class="leaderboard-error">${errMsg}</div>`;
+                    return;
+                }
+                const data = await res.json();
+                const players = Array.isArray(data) ? data : (data.players || []);
                 if (!players.length) {
-                    list.innerHTML = '<div>Пока нет участников</div>';
+                    list.innerHTML = '<div class="leaderboard-empty">Пока нет участников. Тапай — будешь первым!</div>';
                     return;
                 }
                 let html = '';
                 players.forEach((p, i) => {
                     const cls = i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : '';
-                    const name = p.first_name || p.username || `Player ${p.user_id.slice(-4)}`;
-                    html += `<div class="leaderboard-row ${cls}"><span class="leaderboard-rank">#${i+1}</span><span class="leaderboard-name">${name}</span><span class="leaderboard-score">${p.score}</span></div>`;
+                    const name = (p.first_name || p.username || `Player ${(p.user_id || '').toString().slice(-4)}`).trim() || 'Игрок';
+                    const score = p.score != null ? p.score : 0;
+                    html += `<div class="leaderboard-row ${cls}"><span class="leaderboard-rank">#${i+1}</span><span class="leaderboard-name">${escapeHtml(name)}</span><span class="leaderboard-score">${score} AIR</span></div>`;
                 });
                 list.innerHTML = html;
-            } catch {
-                list.innerHTML = '<div style="color:#ff8888;">Ошибка</div>';
+            } catch (e) {
+                list.innerHTML = `<div class="leaderboard-error">${errMsg}</div>`;
             }
+        }
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         async function loadPlayerRank() {
@@ -520,11 +541,15 @@
             const rankDiv = document.getElementById('playerRank');
             try {
                 const res = await fetch(`${API_BASE_URL}/api/player-rank/${userId}`);
+                if (!res.ok) {
+                    rankDiv.innerHTML = '<span class="leaderboard-error">Рейтинг недоступен</span>';
+                    return;
+                }
                 const data = await res.json();
-                if (data.rank) rankDiv.innerHTML = `<span class="leaderboard-rank">#${data.rank}</span><span class="leaderboard-name">${userName}</span><span class="leaderboard-score">${data.score}</span>`;
-                else rankDiv.innerHTML = 'Ты пока не в рейтинге';
+                if (data.rank != null) rankDiv.innerHTML = `<span class="leaderboard-rank">#${data.rank}</span><span class="leaderboard-name">${escapeHtml(userName)}</span><span class="leaderboard-score">${data.score || 0} AIR</span>`;
+                else rankDiv.innerHTML = 'Ты пока не в рейтинге. Тапай — попадешь в таблицу!';
             } catch {
-                rankDiv.innerHTML = 'Ошибка';
+                rankDiv.innerHTML = '<span class="leaderboard-error">Рейтинг недоступен</span>';
             }
         }
 
