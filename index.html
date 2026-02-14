@@ -412,8 +412,8 @@
     <script>
         // Для локальной разработки — localhost. На GitHub Pages подставь URL своего бэкенда (Render, Railway и т.д.)
         const isProduction = window.location.hostname.includes('github.io');
-        const API_BASE_URL = isProduction ? 'https://YOUR_BACKEND_URL' : 'http://localhost:3001';
-        const BOT_USERNAME = 'твой_бот_bot'; // Замени на @username своего бота в Telegram
+        const API_BASE_URL = isProduction ? 'https://tap-game-t2in.onrender.com' : 'http://localhost:3001';
+        const BOT_USERNAME = 'OfficiallAIR_Bot'; // Замени на @username своего бота в Telegram
 
         const tg = window.Telegram.WebApp;
         tg.ready();
@@ -502,17 +502,24 @@
             document.getElementById('leaderboardScreen').classList.remove('active');
         }
 
+        function fetchWithTimeout(url, ms) {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), ms);
+            return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(t));
+        }
         async function loadLeaderboard() {
             const list = document.getElementById('leaderboardList');
-            list.innerHTML = '<div class="loading">Загрузка...</div>';
+            list.innerHTML = '<div class="loading">Загрузка... (если первый раз — подожди до 1 мин)</div>';
             const errMsg = 'Сервер рейтинга недоступен. Задеплой бэкенд и укажи его URL в index.html (API_BASE_URL).';
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/leaderboard`);
-                if (!res.ok) {
-                    list.innerHTML = `<div class="leaderboard-error">${errMsg}</div>`;
-                    return;
-                }
-                const data = await res.json();
+            const url = `${API_BASE_URL}/api/leaderboard`;
+            for (let attempt = 0; attempt < 2; attempt++) {
+                try {
+                    const res = await fetchWithTimeout(url, 65000);
+                    if (!res.ok) {
+                        list.innerHTML = `<div class="leaderboard-error">${errMsg}</div>`;
+                        return;
+                    }
+                    const data = await res.json();
                 const players = Array.isArray(data) ? data : (data.players || []);
                 if (!players.length) {
                     list.innerHTML = '<div class="leaderboard-empty">Пока нет участников. Тапай — будешь первым!</div>';
@@ -526,8 +533,15 @@
                     html += `<div class="leaderboard-row ${cls}"><span class="leaderboard-rank">#${i+1}</span><span class="leaderboard-name">${escapeHtml(name)}</span><span class="leaderboard-score">${score} AIR</span></div>`;
                 });
                 list.innerHTML = html;
-            } catch (e) {
-                list.innerHTML = `<div class="leaderboard-error">${errMsg}</div>`;
+                    return;
+                } catch (e) {
+                    if (attempt === 0) {
+                        list.innerHTML = '<div class="loading">Пробуждение сервера, подожди...</div>';
+                        await new Promise(r => setTimeout(r, 3000));
+                    } else {
+                        list.innerHTML = `<div class="leaderboard-error">${errMsg}</div>`;
+                    }
+                }
             }
         }
         function escapeHtml(text) {
