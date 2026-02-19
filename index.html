@@ -423,19 +423,24 @@
                 <span class="leaderboard-name">⭐ 10 Stars</span>
                 <span class="leaderboard-score">+1000 AIR</span>
             </div>
-            <button class="gold-button blue-button" onclick="buyStarsPack()">Купить</button>
-            <div class="reward-text" style="margin-top: 10px; opacity: 0.9;">
+            <button class="gold-button blue-button" onclick="buyStarsPack()" id="buyButton">Купить</button>
+            <div id="paymentStatus" class="reward-text" style="margin-top: 10px; opacity: 0.9;">
                 Оплата через Telegram Stars. После успешной оплаты AIR начислится автоматически.
             </div>
         </div>
     </div>
 
     <script>
-        // Для локальной разработки — localhost. На GitHub Pages подставь URL своего бэкенда (Render, Railway и т.д.)
+        // ═══════════════════════════════════════════════
+        // 1. НАСТРОЙКИ
+        // ═══════════════════════════════════════════════
         const isProduction = window.location.hostname.includes('github.io');
         const API_BASE_URL = isProduction ? 'https://tap-game-t2in.onrender.com' : 'http://localhost:3001';
         const BOT_USERNAME = 'OfficiallAIR_Bot'; // Замени на @username своего бота в Telegram
 
+        // ═══════════════════════════════════════════════
+        // 2. TELEGRAM
+        // ═══════════════════════════════════════════════
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
@@ -445,22 +450,34 @@
         const userName = initData.user?.first_name || "Игрок";
         const userUsername = initData.user?.username;
 
+        // ═══════════════════════════════════════════════
+        // 3. ПОКАЗЫВАЕМ ID
+        // ═══════════════════════════════════════════════
         if (userId) {
             document.getElementById('user-info').innerHTML = `🆔 Твой ID: <strong>${userId}</strong> · 👤 ${userName}`;
         } else {
             document.getElementById('user-info').innerHTML = `⚠️ Запусти в Telegram бота`;
         }
 
+        // ═══════════════════════════════════════════════
+        // 4. КЛЮЧИ ХРАНЕНИЯ
+        // ═══════════════════════════════════════════════
         const storageKey = userId ? "tap_score_" + userId : "tap_score_guest";
         const channelBonusKey = userId ? "bonus_channel_" + userId : "bonus_channel_guest";
         const dailyTimeKey = userId ? "daily_time_" + userId : "daily_time_guest";
         const referralCountKey = userId ? "referral_count_" + userId : "referral_count_guest";
         const referralRewardsKey = userId ? "referral_rewards_" + userId : "referral_rewards_guest";
 
+        // ═══════════════════════════════════════════════
+        // 5. ЗАГРУЗКА СЧЁТА
+        // ═══════════════════════════════════════════════
         let savedScore = localStorage.getItem(storageKey);
         let count = savedScore ? parseInt(savedScore) : 0;
         document.getElementById('score').innerText = count;
 
+        // ═══════════════════════════════════════════════
+        // 6. МУЛЬТИТАЧ
+        // ═══════════════════════════════════════════════
         const tapButton = document.getElementById('tapButton');
         let tapLock = false;
         
@@ -483,6 +500,9 @@
             }
         }, { passive: false });
 
+        // ═══════════════════════════════════════════════
+        // 7. ОТПРАВКА СЧЁТА НА СЕРВЕР
+        // ═══════════════════════════════════════════════
         let updateTimeout;
         function updateScoreOnServer() {
             if (!userId) return;
@@ -497,10 +517,13 @@
                         first_name: userName,
                         score: count
                     })
-                }).catch(err => console.error(err));
+                }).catch(err => console.error('Score update error:', err));
             }, 5000);
         }
 
+        // ═══════════════════════════════════════════════
+        // 8. УПРАВЛЕНИЕ МЕНЮ
+        // ═══════════════════════════════════════════════
         function toggleMenu() {
             document.getElementById('dropdownMenu').classList.toggle('active');
             tg.HapticFeedback.impactOccurred('light');
@@ -512,6 +535,9 @@
             if (!menu.contains(e.target) && !btn.contains(e.target)) menu.classList.remove('active');
         });
 
+        // ═══════════════════════════════════════════════
+        // 9. ЛИДЕРБОРД
+        // ═══════════════════════════════════════════════
         async function openLeaderboard() {
             document.getElementById('leaderboardScreen').classList.add('active');
             tg.HapticFeedback.impactOccurred('light');
@@ -532,55 +558,149 @@
             document.getElementById('shopScreen').classList.remove('active');
         }
 
+        // ═══════════════════════════════════════════════
+        // 10. ПОКУПКА ЗА STARS (ИСПРАВЛЕНО!)
+        // ═══════════════════════════════════════════════
         async function buyStarsPack() {
             if (!userId) {
                 tg.showAlert('⚠️ Открой игру из Telegram бота, чтобы оплатить Stars');
                 return;
             }
+            
             if (typeof tg.openInvoice !== 'function') {
                 tg.showAlert('⚠️ Оплата доступна только внутри Telegram');
                 return;
             }
 
+            const buyButton = document.getElementById('buyButton');
+            const originalText = buyButton.innerText;
+            const statusDiv = document.getElementById('paymentStatus');
+            
+            // Меняем текст кнопки на индикатор загрузки
+            buyButton.innerText = '⏳ Подключение...';
+            buyButton.disabled = true;
+            statusDiv.innerHTML = '⏳ Соединяемся с сервером оплаты...';
+
             try {
-                const res = await fetch(`${API_BASE_URL}/api/payments/stars/invoice-link`, {
+                // Создаём контроллер для таймаута
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 секунд таймаут
+
+                console.log('🔄 Отправляем запрос на:', `${API_BASE_URL}/api/payments/stars/invoice-link`);
+                
+                const response = await fetch(`${API_BASE_URL}/api/payments/stars/invoice-link`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userId })
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        user_id: userId.toString(),
+                        stars_amount: 10,
+                        product: 'stars_pack_10'
+                    }),
+                    signal: controller.signal
                 });
-                const data = await res.json();
-                if (!res.ok || !data.invoice_link) {
-                    tg.showAlert('❌ Не удалось создать инвойс. Попробуй позже.');
-                    return;
+
+                clearTimeout(timeoutId);
+                
+                // Проверяем статус ответа
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Ошибка сервера:', response.status, errorText);
+                    throw new Error(`Сервер вернул ошибку ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ Ответ сервера:', data);
+                
+                if (!data.invoice_link) {
+                    throw new Error('Сервер не вернул ссылку на оплату');
                 }
 
+                // Восстанавливаем кнопку
+                buyButton.innerText = originalText;
+                buyButton.disabled = false;
+                statusDiv.innerHTML = '⏳ Ожидание оплаты...';
+
+                // Открываем инвойс
                 tg.openInvoice(data.invoice_link, async (status) => {
-                    // status: "paid" | "cancelled" | "failed" | "pending"
+                    console.log('📊 Статус оплаты:', status);
+                    
                     if (status === 'paid') {
+                        statusDiv.innerHTML = '✅ Оплата прошла! Начисляем AIR...';
                         tg.showAlert('✅ Оплата прошла! Начисляем AIR...');
-                        // Синхронизируем счётчик с сервером
+                        
+                        // Обновляем данные
                         await loadPlayerRank().catch(() => {});
                         await loadLeaderboard().catch(() => {});
+                        
+                        statusDiv.innerHTML = '✅ +1000 AIR зачислено! Спасибо за покупку!';
+                        tg.showAlert('🎉 +1000 AIR зачислено!');
+                        
+                    } else if (status === 'cancelled') {
+                        statusDiv.innerHTML = '❌ Оплата отменена';
+                        tg.showAlert('❌ Оплата отменена');
                     } else if (status === 'failed') {
-                        tg.showAlert('❌ Оплата не прошла');
+                        statusDiv.innerHTML = '❌ Ошибка оплаты';
+                        tg.showAlert('❌ Ошибка оплаты');
+                    } else {
+                        statusDiv.innerHTML = '❌ Неизвестный статус оплаты';
                     }
+                    
+                    // Возвращаем стандартный текст через 3 секунды
+                    setTimeout(() => {
+                        statusDiv.innerHTML = 'Оплата через Telegram Stars. После успешной оплаты AIR начислится автоматически.';
+                    }, 3000);
                 });
-            } catch (e) {
-                console.error(e);
-                tg.showAlert('❌ Ошибка соединения с сервером');
+
+            } catch (error) {
+                console.error('❌ Ошибка оплаты:', error);
+                
+                // Возвращаем кнопку в исходное состояние
+                buyButton.innerText = originalText;
+                buyButton.disabled = false;
+                
+                // Понятное сообщение об ошибке
+                if (error.name === 'AbortError') {
+                    statusDiv.innerHTML = '❌ Сервер не отвечает (таймаут). Проверь, запущен ли бэкенд на Render.com';
+                    tg.showAlert('❌ Сервер не отвечает. Попробуй позже.');
+                } else if (error.message.includes('Failed to fetch')) {
+                    statusDiv.innerHTML = `❌ Не удалось подключиться к серверу. Проверь URL: ${API_BASE_URL}`;
+                    tg.showAlert('❌ Бэкенд недоступен. Проверь соединение.');
+                } else {
+                    statusDiv.innerHTML = `❌ ${error.message || 'Неизвестная ошибка'}`;
+                    tg.showAlert(`❌ ${error.message || 'Ошибка соединения с сервером'}`);
+                }
+                
+                // Возвращаем стандартный текст через 5 секунд
+                setTimeout(() => {
+                    statusDiv.innerHTML = 'Оплата через Telegram Stars. После успешной оплаты AIR начислится автоматически.';
+                }, 5000);
             }
         }
 
+        // ═══════════════════════════════════════════════
+        // 11. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЛИДЕРБОРДА
+        // ═══════════════════════════════════════════════
         function fetchWithTimeout(url, ms) {
             const ctrl = new AbortController();
             const t = setTimeout(() => ctrl.abort(), ms);
             return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(t));
         }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
         async function loadLeaderboard() {
             const list = document.getElementById('leaderboardList');
             list.innerHTML = '<div class="loading">Загрузка... (если первый раз — подожди до 1 мин)</div>';
             const errMsg = 'Сервер рейтинга недоступен. Задеплой бэкенд и укажи его URL в index.html (API_BASE_URL).';
             const url = `${API_BASE_URL}/api/leaderboard`;
+            
             for (let attempt = 0; attempt < 2; attempt++) {
                 try {
                     const res = await fetchWithTimeout(url, 65000);
@@ -589,20 +709,23 @@
                         return;
                     }
                     const data = await res.json();
-                const players = Array.isArray(data) ? data : (data.players || []);
-                if (!players.length) {
-                    list.innerHTML = '<div class="leaderboard-empty">Пока нет участников. Тапай — будешь первым!</div>';
+                    const players = Array.isArray(data) ? data : (data.players || []);
+                    
+                    if (!players.length) {
+                        list.innerHTML = '<div class="leaderboard-empty">Пока нет участников. Тапай — будешь первым!</div>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    players.forEach((p, i) => {
+                        const cls = i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : '';
+                        const name = (p.first_name || p.username || `Player ${(p.user_id || '').toString().slice(-4)}`).trim() || 'Игрок';
+                        const score = p.score != null ? p.score : 0;
+                        html += `<div class="leaderboard-row ${cls}"><span class="leaderboard-rank">#${i+1}</span><span class="leaderboard-name">${escapeHtml(name)}</span><span class="leaderboard-score">${score} AIR</span></div>`;
+                    });
+                    list.innerHTML = html;
                     return;
-                }
-                let html = '';
-                players.forEach((p, i) => {
-                    const cls = i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : '';
-                    const name = (p.first_name || p.username || `Player ${(p.user_id || '').toString().slice(-4)}`).trim() || 'Игрок';
-                    const score = p.score != null ? p.score : 0;
-                    html += `<div class="leaderboard-row ${cls}"><span class="leaderboard-rank">#${i+1}</span><span class="leaderboard-name">${escapeHtml(name)}</span><span class="leaderboard-score">${score} AIR</span></div>`;
-                });
-                list.innerHTML = html;
-                    return;
+                    
                 } catch (e) {
                     if (attempt === 0) {
                         list.innerHTML = '<div class="loading">Пробуждение сервера, подожди...</div>';
@@ -612,11 +735,6 @@
                     }
                 }
             }
-        }
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
         }
 
         async function loadPlayerRank() {
@@ -629,13 +747,19 @@
                     return;
                 }
                 const data = await res.json();
-                if (data.rank != null) rankDiv.innerHTML = `<span class="leaderboard-rank">#${data.rank}</span><span class="leaderboard-name">${escapeHtml(userName)}</span><span class="leaderboard-score">${data.score || 0} AIR</span>`;
-                else rankDiv.innerHTML = 'Ты пока не в рейтинге. Тапай — попадешь в таблицу!';
+                if (data.rank != null) {
+                    rankDiv.innerHTML = `<span class="leaderboard-rank">#${data.rank}</span><span class="leaderboard-name">${escapeHtml(userName)}</span><span class="leaderboard-score">${data.score || 0} AIR</span>`;
+                } else {
+                    rankDiv.innerHTML = 'Ты пока не в рейтинге. Тапай — попадешь в таблицу!';
+                }
             } catch {
                 rankDiv.innerHTML = '<span class="leaderboard-error">Рейтинг недоступен</span>';
             }
         }
 
+        // ═══════════════════════════════════════════════
+        // 12. БОНУСЫ
+        // ═══════════════════════════════════════════════
         function claimDailyBonus() {
             const last = localStorage.getItem(dailyTimeKey);
             const now = Date.now();
@@ -696,6 +820,9 @@
             tg.showAlert('🎉 +5000 AIR!');
         }
 
+        // ═══════════════════════════════════════════════
+        // 13. РЕФЕРАЛЫ
+        // ═══════════════════════════════════════════════
         function initReferrals() {
             if (!userId) return;
             let c = localStorage.getItem(referralCountKey);
@@ -762,6 +889,9 @@
             navigator.clipboard.writeText(link).then(() => tg.showAlert('✅ Скопировано!'));
         }
 
+        // ═══════════════════════════════════════════════
+        // 14. УПРАВЛЕНИЕ ЭКРАНАМИ
+        // ═══════════════════════════════════════════════
         function openBonuses() {
             document.getElementById('bonusScreen').classList.add('active');
             tg.HapticFeedback.impactOccurred('light');
@@ -782,10 +912,28 @@
             document.getElementById('friendsScreen').classList.remove('active');
         }
 
+        // ═══════════════════════════════════════════════
+        // 15. ЗАПУСК
+        // ═══════════════════════════════════════════════
         if (userId) {
             updateDailyBonusUI();
             initReferrals();
         }
+
+        // ═══════════════════════════════════════════════
+        // 16. ТЕСТОВАЯ ФУНКЦИЯ (для отладки)
+        // ═══════════════════════════════════════════════
+        window.testServerConnection = async function() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/leaderboard`);
+                const data = await res.json();
+                console.log('✅ Сервер отвечает:', data);
+                tg.showAlert('✅ Сервер работает!');
+            } catch (e) {
+                console.error('❌ Сервер не отвечает:', e);
+                tg.showAlert('❌ Сервер недоступен');
+            }
+        };
     </script>
 </body>
 </html>
