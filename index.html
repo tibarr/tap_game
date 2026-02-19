@@ -352,6 +352,9 @@
         <div class="menu-item" onclick="openLeaderboard(); toggleMenu();">
             🏆 Leaderboards
         </div>
+        <div class="menu-item" onclick="openShop(); toggleMenu();">
+            🛒 Магазин
+        </div>
     </div>
     
     <div class="content">
@@ -406,6 +409,24 @@
             <div class="card-title">🏆 ГЛОБАЛЬНЫЙ РЕЙТИНГ</div>
             <div id="leaderboardList" class="leaderboard-table"><div class="loading">Загрузка...</div></div>
             <div id="playerRank" class="leaderboard-row current-player"></div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН МАГАЗИНА -->
+    <div id="shopScreen" class="screen">
+        <div class="close-button" onclick="closeShop()">✕</div>
+        <div class="card">
+            <div class="card-title">🛒 МАГАЗИН</div>
+            <div class="card-description">Покупай AIR и ускоряй прогресс</div>
+
+            <div class="leaderboard-row" style="margin-top: 16px;">
+                <span class="leaderboard-name">💵 $1</span>
+                <span class="leaderboard-score">+1000 AIR</span>
+            </div>
+            <button class="gold-button blue-button" onclick="buyAirPack(1000, 1)">Купить</button>
+            <div class="reward-text" style="margin-top: 10px; opacity: 0.9;">
+                Сейчас это демо-покупка (начисляет AIR). Для реальной оплаты подключим Telegram Payments/Stars.
+            </div>
         </div>
     </div>
 
@@ -500,6 +521,33 @@
 
         function closeLeaderboard() {
             document.getElementById('leaderboardScreen').classList.remove('active');
+        }
+
+        function openShop() {
+            document.getElementById('shopScreen').classList.add('active');
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        function closeShop() {
+            document.getElementById('shopScreen').classList.remove('active');
+        }
+
+        async function buyAirPack(airAmount, priceUsd) {
+            const confirmText = `Купить +${airAmount} AIR за $${priceUsd}?`;
+            const doConfirm = (typeof tg.showConfirm === 'function')
+                ? () => new Promise((resolve) => tg.showConfirm(confirmText, resolve))
+                : () => Promise.resolve(confirm(confirmText));
+
+            const ok = await doConfirm();
+            if (!ok) return;
+
+            // Демо-покупка: начисляем AIR локально и отправляем на сервер рейтинга (если есть userId)
+            count += airAmount;
+            document.getElementById('score').innerText = count;
+            localStorage.setItem(storageKey, count);
+            updateScoreOnServer();
+
+            if (typeof tg.showAlert === 'function') tg.showAlert(`✅ Куплено: +${airAmount} AIR`);
         }
 
         function fetchWithTimeout(url, ms) {
