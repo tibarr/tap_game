@@ -420,12 +420,12 @@
             <div class="card-description">Покупай AIR и ускоряй прогресс</div>
 
             <div class="leaderboard-row" style="margin-top: 16px;">
-                <span class="leaderboard-name">💵 $1</span>
+                <span class="leaderboard-name">⭐ 10 Stars</span>
                 <span class="leaderboard-score">+1000 AIR</span>
             </div>
-            <button class="gold-button blue-button" onclick="buyAirPack(1000, 1)">Купить</button>
+            <button class="gold-button blue-button" onclick="buyStarsPack()">Купить</button>
             <div class="reward-text" style="margin-top: 10px; opacity: 0.9;">
-                Сейчас это демо-покупка (начисляет AIR). Для реальной оплаты подключим Telegram Payments/Stars.
+                Оплата через Telegram Stars. После успешной оплаты AIR начислится автоматически.
             </div>
         </div>
     </div>
@@ -532,22 +532,43 @@
             document.getElementById('shopScreen').classList.remove('active');
         }
 
-        async function buyAirPack(airAmount, priceUsd) {
-            const confirmText = `Купить +${airAmount} AIR за $${priceUsd}?`;
-            const doConfirm = (typeof tg.showConfirm === 'function')
-                ? () => new Promise((resolve) => tg.showConfirm(confirmText, resolve))
-                : () => Promise.resolve(confirm(confirmText));
+        async function buyStarsPack() {
+            if (!userId) {
+                tg.showAlert('⚠️ Открой игру из Telegram бота, чтобы оплатить Stars');
+                return;
+            }
+            if (typeof tg.openInvoice !== 'function') {
+                tg.showAlert('⚠️ Оплата доступна только внутри Telegram');
+                return;
+            }
 
-            const ok = await doConfirm();
-            if (!ok) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/payments/stars/invoice-link`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.invoice_link) {
+                    tg.showAlert('❌ Не удалось создать инвойс. Попробуй позже.');
+                    return;
+                }
 
-            // Демо-покупка: начисляем AIR локально и отправляем на сервер рейтинга (если есть userId)
-            count += airAmount;
-            document.getElementById('score').innerText = count;
-            localStorage.setItem(storageKey, count);
-            updateScoreOnServer();
-
-            if (typeof tg.showAlert === 'function') tg.showAlert(`✅ Куплено: +${airAmount} AIR`);
+                tg.openInvoice(data.invoice_link, async (status) => {
+                    // status: "paid" | "cancelled" | "failed" | "pending"
+                    if (status === 'paid') {
+                        tg.showAlert('✅ Оплата прошла! Начисляем AIR...');
+                        // Синхронизируем счётчик с сервером
+                        await loadPlayerRank().catch(() => {});
+                        await loadLeaderboard().catch(() => {});
+                    } else if (status === 'failed') {
+                        tg.showAlert('❌ Оплата не прошла');
+                    }
+                });
+            } catch (e) {
+                console.error(e);
+                tg.showAlert('❌ Ошибка соединения с сервером');
+            }
         }
 
         function fetchWithTimeout(url, ms) {
